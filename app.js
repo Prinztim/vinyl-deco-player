@@ -14,9 +14,9 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 /* ---------- small helpers ---------- */
 let toastTimer;
-function toast(msg) {
+function toast(msg, ms = 7000) {
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
 }
 const store = {
   get: k => { try { return JSON.parse(localStorage.getItem('vdp.' + k)); } catch { return null; } },
@@ -52,7 +52,8 @@ async function getToken() {
   let a = store.get('auth');
   if (!a) throw new Error('not logged in');
   if (Date.now() > a.expires) {
-    await tokenRequest({ grant_type: 'refresh_token', refresh_token: a.refresh });
+    try { await tokenRequest({ grant_type: 'refresh_token', refresh_token: a.refresh }); }
+    catch (e) { if (/invalid_grant|revoked|refresh/i.test(e.message)) { store.del('auth'); showConnect(); } throw e; }
     a = store.get('auth');
   }
   return a.access;
@@ -202,8 +203,8 @@ function loadArt(t) {
 async function swapRecord(track, resume) {
   S.queued = track; S.resumeWanted = S.resumeWanted || resume;
   if (S.swapping) return; // a swap is running; it will pick up the newest record
-  S.swapping = true; S.cueing = false; renderPlaying(); // arm back to its rest, motor winds down
-  while (S.queued) {
+  S.swapping = true; S.busyAt = Date.now(); S.cueing = false; renderPlaying(); // arm back to its rest, motor winds down
+  try { while (S.queued) {
     const t = S.queued; S.queued = null;
     if (S.onPlatter) {
       await sleep(armDeg > ARM.rest + 1 ? 1000 : 250);
@@ -220,19 +221,24 @@ async function swapRecord(track, resume) {
       { transform: 'scale(1.07)', filter: LIFT, offset: .72 },
       { transform: 'none', filter: 'none' }], 1250, 'cubic-bezier(.25,.6,.3,1)');
     S.onPlatter = true; S.lastOn = t;
-  }
-  S.swapping = false; S.holding = false;
+  } } catch (e) { console.error(e); S.queued = null; } finally { S.swapping = false; S.holding = false; }
   if (S.resumeWanted) { S.resumeWanted = false; await cueAndPlay(true); } else renderPlaying();
 }
 async function cueAndPlay(fromStart) { // lower the arm onto the record, then start the music
-  S.cueing = true; renderPlaying();
+  S.cueing = true; S.cueAt = Date.now(); renderPlaying();
+  if (!DEMO && !(await ensureDevice())) { S.cueing = false; renderPlaying(); return toast('Not connected to Spotify. Close and reopen the app.'); }
   setArm(ARM_OUT + (ARM_IN - ARM_OUT) * (fromStart ? 0 : clamp(curPos() / S.dur, 0, 1)));
   await sleep(1050); Sound.drop();
   try {
     if (S.after) { const go = S.after; S.after = null; setTimeout(() => { S.expect = null; }, 4000); await go(); await sleep(250); await P.resume(); } // skip: Spotify moves to the new song only now
     else { if (fromStart) await P.seek(0); await P.resume(); }
   } catch (e) { toast(e.message); }
-  await sleep(700); S.cueing = false; renderPlaying();
+  await sleep(700);
+  if (!DEMO && S.paused && S.track && !S.swapping) { // the player ignored resume (it was idle too long): ask Spotify directly
+    await sleep(1100);
+    if (S.paused && !S.swapping) { try { await play({ uris: [S.track.uri], position_ms: fromStart ? 0 : Math.floor(curPos()) }); } catch (e) { toast(e.message); } }
+  }
+  S.cueing = false; renderPlaying();
   if (!DEMO) setTimeout(() => { if (S.paused && !S.swapping) toast('Tap the record to keep playing'); }, 1500);
 }
 function stash(t) { // remember records that were taken off, newest first
@@ -243,35 +249,57 @@ function stash(t) { // remember records that were taken off, newest first
 
 function onState(s) {
   if (!s || !s.track_window.current_track) return;
-  const t = s.track_window.current_track;
+  const t = s.track_window.current_track; S.lastStateAt = Date.now();
   const track = { id: t.id || t.uri, uri: t.uri, name: t.name, artist: t.artists.map(a => a.name).join(', '), art: (t.album.images[0] || {}).url };
-  if (S.expect && S.expect !== track.id && (S.swapping || S.after)) { if (!s.paused) S.player.pause(); return; } // still the old song while the record is being changed
+  if (S.expect && S.expect !== track.id && Date.now() < S.skipUntil) { if (!s.paused) S.player.pause(); return; } // still the old song while the record is being changed
   if (S.expect === track.id) S.expect = null;
   const changed = !S.track || S.track.id !== track.id;
   S.paused = s.paused; S.pos = s.position; S.dur = s.duration || 1; S.stamp = Date.now();
   if (changed) {
     S.track = track; showTrack(track);
     const playing = !s.paused || S.holdResume;
-    S.holdResume = false; S.holding = true;
+    S.holdResume = false; S.holding = true; S.holdAt = Date.now(); S.expect = null;
     if (!s.paused) S.player.pause(); // no music until the new record is on the platter
     swapRecord(track, playing);
   } else if (!s.paused && (S.holding || S.swapping)) S.player.pause(); // Spotify started late: keep it silent until the record is on
   renderPlaying();
 }
 setInterval(renderArm, 1000);
+setInterval(() => { // safety net: if a swap, cue or hold never finished, let go so the buttons work again
+  const now = Date.now();
+  if (S.swapping && now - (S.busyAt || now) > 40000) { S.swapping = false; S.queued = null; S.holding = false; renderPlaying(); }
+  if (S.cueing && now - (S.cueAt || now) > 25000) { S.cueing = false; renderPlaying(); }
+  if (S.holding && !S.swapping && now - (S.holdAt || now) > 10000) S.holding = false;
+}, 3000);
 
 /* ---------- actions ---------- */
 let shuffleOn = !!store.get('shuffle');
 const setShuffle = on => api('/me/player/shuffle?state=' + on + '&device_id=' + S.deviceId, { method: 'PUT' });
+const waitFor = async (fn, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (fn()) return true; await sleep(200); } return !!fn(); };
+async function ensureDevice() { // the Spotify player drops after long idle times; bring it back before playing
+  if (S.deviceId) return true;
+  try { S.player && S.player.connect(); } catch { /* retry below */ }
+  return waitFor(() => S.deviceId, 8000);
+}
 async function play(body, remember, total) { // total = number of tracks, so a shuffled start can be a random track
   if (DEMO) return toast('Demo mode: Spotify is not connected');
-  if (!S.deviceId) return toast('Player is still starting, try again in a moment');
+  if (!S.player) return toast('Player is still starting, try again in a moment');
+  S.after = null; S.expect = null; S.skipUntil = 0; S.holding = false; S.holdResume = false; // a new choice cancels any half-done skip
+  if (!(await ensureDevice())) return toast('Not connected to Spotify. Close and reopen the app.');
   await S.player.activateElement();
   const b = { ...body };
   if (shuffleOn && total > 1 && b.context_uri && !b.offset) b.offset = { position: Math.floor(Math.random() * total) };
   try { await setShuffle(shuffleOn); } catch { /* playing still works without it */ }
-  await api('/me/player/play?device_id=' + S.deviceId, { method: 'PUT', body: JSON.stringify(b) });
+  const put = () => api('/me/player/play?device_id=' + S.deviceId, { method: 'PUT', body: JSON.stringify(b) });
+  const asked = Date.now();
+  try { await put(); }
+  catch (e) {
+    if (!/device|active|not found|no active/i.test(e.message)) throw e;
+    await api('/me/player', { method: 'PUT', body: JSON.stringify({ device_ids: [S.deviceId], play: false }) }); // wake this player up
+    await sleep(800); await put();
+  }
   if (remember) store.set('last', body);
+  setTimeout(() => { if ((S.lastStateAt || 0) < asked && !isPlaying()) toast('Spotify did not answer. Tap the record to try again.'); }, 6000);
 }
 const playSafe = (body, remember, total) => play(body, remember, total).catch(e => toast(e.message));
 async function playLiked() {
@@ -288,7 +316,7 @@ async function togglePlay() {
   if (S.cueing) return;
   if (!DEMO && !S.player) return;
   if (!DEMO && !store.get('auth')) return showConnect();
-  if (S.track) return isPlaying() ? P.pause() : cueAndPlay(false);
+  if (S.track) { if (isPlaying()) return P.pause(); S.after = S.after || null; return cueAndPlay(false); }
   const last = store.get('last');
   if (last) playSafe(typeof last === 'string' ? { context_uri: last } : last); else openSheet();
 }
@@ -304,9 +332,9 @@ async function skip(dir) { // the record changes first; Spotify is only told to 
     S.swapping = true; renderPlaying(); try { await S.player.pause(); } catch {}
     S.swapping = false; return cueAndPlay(true);
   }
-  if (!cand) { S.holdResume = wasPlaying; S.holding = true; try { await S.player.pause(); } catch {} return dir > 0 ? S.player.nextTrack() : S.player.previousTrack(); }
+  if (!cand) { S.holdResume = wasPlaying; S.holding = true; S.holdAt = Date.now(); try { await S.player.pause(); } catch {} return dir > 0 ? S.player.nextTrack() : S.player.previousTrack(); }
   const track = trackOf(cand);
-  S.expect = track.id; S.after = () => dir > 0 ? S.player.nextTrack() : S.player.previousTrack();
+  S.expect = track.id; S.skipUntil = Date.now() + 12000; S.after = () => dir > 0 ? S.player.nextTrack() : S.player.previousTrack();
   try { if (!S.paused) await S.player.pause(); } catch {}
   S.track = track; showTrack(track); swapRecord(track, true);
 }
@@ -375,14 +403,14 @@ function renderSearch(box) {
     out.innerHTML = '<div class="loading">Searching…</div>';
     try {
       const r = DEMO ? { tracks: { items: DEMO_TRACKS.filter(t => (t.name + t.artist).toLowerCase().includes(searchQ.toLowerCase())).map(t => ({ uri: t.uri, name: t.name, artists: [{ name: t.artist }], album: { images: [{ url: t.art }] } })) } }
-        : await api('/search?type=track,album,artist,playlist&limit=10&q=' + encodeURIComponent(searchQ));
+        : await api('/search?type=track,album,artist,playlist&limit=10&market=from_token&q=' + encodeURIComponent(searchQ));
       if (inp.value.trim() !== searchQ) return; // a newer search is already running
       out.innerHTML = '';
       const sec = (title, items, make) => { items = (items || []).filter(Boolean); if (!items.length) return 0;
         const h = document.createElement('div'); h.className = 'sec'; h.textContent = title; out.appendChild(h); items.forEach(i => out.appendChild(make(i))); return items.length; };
       const img = o => (o.images && o.images[0] && o.images[0].url) || (o.album && o.album.images && o.album.images[0] && o.album.images[0].url);
       let n = 0;
-      n += sec('Songs', r.tracks && r.tracks.items, t => card(img(t), t.name, t.artists.map(a => a.name).join(', '), () => playSafe({ uris: [t.uri] }, true)));
+      n += sec('Songs', r.tracks && (r.tracks.items || []).filter(t => t && t.is_playable !== false), t => card(img(t), t.name, t.artists.map(a => a.name).join(', '), () => playSafe({ uris: [t.uri] }, true)));
       n += sec('Albums', r.albums && r.albums.items, a => card(img(a), a.name, a.artists.map(x => x.name).join(', '), () => playSafe({ context_uri: a.uri }, true, a.total_tracks || 0)));
       n += sec('Artists', r.artists && r.artists.items, a => card(img(a), a.name, 'Artist', () => playSafe({ context_uri: a.uri }, true), 'artist'));
       n += sec('Playlists', r.playlists && r.playlists.items, p => card(img(p), p.name, 'by ' + ((p.owner && p.owner.display_name) || 'Spotify'), () => playSafe({ context_uri: p.uri }, true)));
@@ -565,6 +593,7 @@ function startPlayer() {
   p.addListener('authentication_error', e => { toast('Login problem: ' + e.message); store.del('auth'); showConnect(); });
   p.addListener('account_error', () => toast('Spotify Premium is required to play music here'));
   p.addListener('playback_error', e => toast('Playback: ' + e.message));
+  p.addListener('autoplay_failed', () => toast('Tap the record to keep playing'));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !S.deviceId) p.connect(); }); // coming back from the Home Screen / lock screen
   p.connect();
 }
