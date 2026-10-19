@@ -146,3 +146,37 @@ button.on { color: #ffb038; }
 body.night #dimmer { opacity: .6; }
 
 body.ctl #nowplaying { opacity: 0 !important; }
+
+/* ---------- v3: record off the platter, display, crate ---------- */
+#disc.off { visibility: hidden; }
+#tonearm .hit { cursor: grab; }
+#tonearm.drag { transition: none; }
+#tonearm svg { touch-action: none; }
+#vfd { position: absolute; left: calc(var(--u) * 3.2); top: calc(var(--u) * 55.2); width: calc(var(--u) * 10.5); height: calc(var(--u) * 5.6); border-radius: calc(var(--u) * .6); cursor: pointer;
+  background: linear-gradient(180deg, #0b0f0e, #121a18); box-shadow: inset 0 calc(var(--u) * .2) calc(var(--u) * .6) #000, 0 1px 0 rgba(255,225,180,.2), 0 0 0 calc(var(--u) * .25) #2b2219;
+  font: 600 calc(var(--u) * 2.5) "SF Mono", Consolas, "Courier New", monospace; color: #ffb038; text-align: center; line-height: calc(var(--u) * 4.4); overflow: hidden; }
+#vfd .ghost { position: absolute; inset: 0; color: rgba(255,176,56,.07); }
+#vfdText { position: relative; text-shadow: 0 0 calc(var(--u) * .8) rgba(255,160,40,.75); letter-spacing: .04em; white-space: pre; }
+#vfd i { position: absolute; bottom: calc(var(--u) * .25); font: 600 calc(var(--u) * .62) -apple-system, "Segoe UI", sans-serif; letter-spacing: .18em; font-style: normal; line-height: 1; }
+#vfdMode { left: calc(var(--u) * .7); color: rgba(255,176,56,.55); }
+#vfdSleep { right: calc(var(--u) * .7); color: rgba(255,176,56,.12); }
+#vfdSleep.on { color: #ffb038; text-shadow: 0 0 4px rgba(255,160,40,.8); }
+
+#sheetHead { gap: 12px; }
+#tabs { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
+#tabs button { width: auto; height: 38px; padding: 0 16px; border-radius: 20px; font: 15px -apple-system, "Segoe UI", sans-serif; color: rgba(233,223,207,.7); }
+#tabs button.on { background: #e9dfcf; color: #1a1612; }
+#count { font: 13px -apple-system, "Segoe UI", sans-serif; opacity: .5; white-space: nowrap; }
+#lists { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 22px 26px; }
+.card { width: auto !important; height: auto !important; border-radius: 8px !important; display: block !important; padding: 0; color: inherit; font-family: inherit; }
+.card .sleeve { position: relative; margin-right: 20%; }
+.card .sleeve::before { content: ""; position: absolute; top: 3%; bottom: 3%; right: -20%; aspect-ratio: 1; border-radius: 50%; transition: transform .35s; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), 0 4px 10px rgba(0,0,0,.5);
+  background: radial-gradient(circle, #d6a04a 0 15%, #0c0c0d 15.5% 17%, #1a1a1c 17.5%, #0d0d0e 30%, #1b1b1d 31%, #0c0c0d 40%, #2a2a2d 44%, #0c0c0d 47%, #232325 49%, #141416 50%); }
+.card:hover .sleeve::before { transform: translateX(10%); }
+.card .sleeve img, .card .sleeve .ph { position: relative; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; background: #2a241d; display: block;
+  box-shadow: 0 6px 14px rgba(0,0,0,.5); }
+.card.liked .sleeve .ph { background: linear-gradient(135deg, #4a2fbd, #8fd0c3); }
+.card.liked .sleeve .ph::after { content: "♥"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 46px; color: #fff; }
+.notice, .loading { grid-column: 1 / -1; font: 15px -apple-system, "Segoe UI", sans-serif; opacity: .85; line-height: 1.5; }
+.notice button { width: auto; height: 42px; padding: 0 22px; margin-top: 10px; border-radius: 22px; background: #1db954; color: #04130a; font-weight: 600; }
+#controls { gap: 6px; }
