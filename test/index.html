@@ -29,6 +29,7 @@ const SCOPES = 'streaming user-read-email user-read-private user-read-playback-s
 const TEST_TRACK = 'spotify:track:4uLU6hMCjMI75M1A2tKUQC';
 const $ = id => document.getElementById(id);
 const log = m => { $('log').textContent += m + '\n'; };
+log('Redirect URI this page sends to Spotify:\n' + REDIRECT);
 
 async function sha256b64(s) {
   const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
