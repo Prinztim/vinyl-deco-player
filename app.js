@@ -460,14 +460,9 @@ if (IS_IOS) $('vol').style.display = 'none'; // iOS ignores web volume; use the 
 $('vol').value = store.get('vol') ?? 70;
 $('vol').oninput = e => { store.set('vol', +e.target.value); S.player && S.player.setVolume(e.target.value / 100); };
 
-/* glass lid on/off, VU meters swing while a record plays */
+/* glass lid on/off */
 $('bLid').onclick = () => { document.body.classList.toggle('lidoff'); $('bLid').classList.toggle('on', !document.body.classList.contains('lidoff')); store.set('lid', !document.body.classList.contains('lidoff')); };
 if (store.get('lid') === false) document.body.classList.add('lidoff'); $('bLid').classList.toggle('on', !document.body.classList.contains('lidoff'));
-{ const needles = [document.querySelector('#vuL i'), document.querySelector('#vuR i')]; let lv = [0, 0];
-  (function vu(t) { const on = isPlaying();
-    needles.forEach((n, k) => { const goal = on ? 0.38 + 0.3 * Math.abs(Math.sin(t / 430 + k * 1.7) * Math.sin(t / 1170 + k)) + 0.1 * Math.sin(t / 130 + k * 3) : 0;
-      lv[k] += (goal - lv[k]) * (goal > lv[k] ? 0.25 : 0.06); n.style.transform = `rotate(${-44 + lv[k] * 88}deg)`; });
-    requestAnimationFrame(vu); })(0); }
 
 /* keep the screen awake while a record is playing */
 let wake = null;
