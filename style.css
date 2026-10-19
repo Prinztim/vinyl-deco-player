@@ -8,6 +8,8 @@
   --h-hi: #3d3d3d; --h-lo: #141414;                               /* headshell */
   --led: 255, 176, 56; --led-off: #3a2108;
   --ink: rgba(255,226,180,.6); --slot: #0d0907; --badge-ink: #2a2a2a;
+  --w-lo: #4d4d4d; --w-mid: #bdbdbd; --w-hi: #ffffff; --w-band: #262626; --w-tick: #ededed;   /* counterweight */
+  --cart: #d9a33f; --cart-lo: #8a5e16; --tip: transparent;                                  /* cartridge, stylus glow */
   --well-a: #170e08; --well-b: #24150c; --mat-a: #34302c; --mat-b: #1d1a17; --strobe: #202020; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--room); color: #e9dfcf;
@@ -99,10 +101,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--room);
   transform: rotate(var(--arm, -5deg)); transition: transform 1.4s cubic-bezier(.45, 0, .25, 1);
   filter: drop-shadow(calc(var(--u) * .7) calc(var(--u) * .9) calc(var(--u) * .7) rgba(0,0,0,.55)); }
 #tonearm svg { position: absolute; left: calc(var(--u) * -8); top: calc(var(--u) * -12); width: calc(var(--u) * 20); height: calc(var(--u) * 56); overflow: visible; }
-#armrest { position: absolute; width: calc(var(--u) * 3.2); height: calc(var(--u) * 5); margin: calc(var(--u) * -2.5) 0 0 calc(var(--u) * -1.6); border-radius: calc(var(--u) * .5);
-  background: linear-gradient(90deg, var(--a-lo), var(--a-hi) 45%, var(--a-lo)); box-shadow: 0 calc(var(--u) * .4) calc(var(--u) * .7) rgba(0,0,0,.6); }
-#armrest i { position: absolute; left: 14%; right: 14%; top: 10%; height: 62%; border: solid #181818; border-width: 0 calc(var(--u) * .62) calc(var(--u) * .62); border-radius: 0 0 99px 99px; box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
-#armrest::after { content: ""; position: absolute; left: 30%; right: 30%; bottom: 8%; height: 14%; border-radius: 99px; background: #4a4a4a; }
+#armrest { position: absolute; width: calc(var(--u) * 3.4); height: calc(var(--u) * 4.4); margin: calc(var(--u) * -2.2) 0 0 calc(var(--u) * -1.7); }
+#armrest::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--u) * 2.2); border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, var(--a-hi), var(--a-mid) 60%, var(--a-lo)); box-shadow: 0 calc(var(--u) * .4) calc(var(--u) * .7) rgba(0,0,0,.6); }
+#armrest::after { content: ""; position: absolute; left: 34%; right: 34%; top: 14%; bottom: 22%; border-radius: calc(var(--u) * .3); background: linear-gradient(90deg, var(--a-lo), var(--a-hi) 45%, var(--a-lo)); box-shadow: 0 calc(var(--u) * .3) calc(var(--u) * .5) rgba(0,0,0,.5); }
+#armrest i { position: absolute; left: 6%; right: 6%; top: 0; height: calc(var(--u) * 2.3); z-index: 1; border: solid #181818; border-width: 0 calc(var(--u) * .62) calc(var(--u) * .62); border-radius: 0 0 99px 99px; box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
 
 /* start/stop + speed buttons */
 #ctl { position: absolute; right: calc(var(--u) * 4.5); bottom: calc(var(--u) * 4.8); display: flex; gap: calc(var(--u) * 1.4); align-items: center; z-index: 2; }
@@ -222,3 +225,67 @@ body.ctl #nowplaying { opacity: 0 !important; }
   background: linear-gradient(125deg, rgba(255,255,255,.045), transparent 40%, rgba(255,255,255,.03) 78%, transparent);
   box-shadow: inset 0 0 0 calc(var(--u) * .12) rgba(255,255,255,.14), inset 0 0 calc(var(--u) * 3) rgba(255,255,255,.04); }
 body.lidoff #lid { opacity: 0; transform: translateY(calc(var(--u) * -1.2)); }
+
+
+/* ---------- v6: hardware detail shared by every skin ---------- */
+/* record: bevelled edge, lead-in band, track gaps, run-out band, label rings */
+#grooves { background:
+    radial-gradient(circle closest-side, transparent 0 97.2%, rgba(255,255,255,.12) 97.7%, rgba(0,0,0,.6) 99%, transparent 100%),
+    radial-gradient(circle closest-side, transparent 0 92.6%, rgba(8,8,9,.6) 93.2% 96.4%, transparent 97%),
+    radial-gradient(circle closest-side, transparent 0 34%, rgba(10,10,11,.75) 34.2% 40%, rgba(0,0,0,.55) 40.4%, transparent 41%,
+      transparent 52.6%, rgba(0,0,0,.5) 52.9% 53.3%, transparent 53.7% 66%, rgba(0,0,0,.5) 66.3% 66.7%, transparent 67.1% 78.2%, rgba(0,0,0,.5) 78.5% 78.9%, transparent 79.3% 87.6%, rgba(0,0,0,.45) 87.9% 88.3%, transparent 88.7%),
+    radial-gradient(circle, transparent 0 26%, rgba(0,0,0,.9) 26.4% 27.2%, transparent 27.6% 100%),
+    repeating-radial-gradient(circle, #101011 0 .35px, #19191b .35px .8px, #0c0c0d .8px 1.3px); }
+#label::before { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 1;
+  background: radial-gradient(circle, transparent 0 56%, rgba(0,0,0,.12) 57% 57.8%, transparent 58.6% 78%, rgba(255,255,255,.1) 79% 79.5%, transparent 80.3% 91%, rgba(0,0,0,.3) 92%),
+    radial-gradient(circle at 30% 24%, rgba(255,255,255,.22), transparent 42%); }
+#spindle::after { content: ""; position: absolute; left: 20%; top: 14%; width: 32%; height: 26%; border-radius: 50%; background: rgba(255,255,255,.9); filter: blur(.4px); }
+#spindle { box-shadow: 0 0 0 calc(var(--u) * .22) rgba(0,0,0,.3), 0 0 calc(var(--u) * .5) rgba(0,0,0,.65); }
+#mat { background: repeating-radial-gradient(circle, rgba(255,255,255,.03) 0 calc(var(--u) * .1), transparent calc(var(--u) * .1) calc(var(--u) * .42)), radial-gradient(circle, var(--mat-a), var(--mat-b) 70%); }
+#rim::before { content: ""; position: absolute; inset: calc(var(--u) * .55); border-radius: 50%; pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.28), 0 0 0 1px rgba(255,255,255,.22); }
+
+/* tonearm base: scale ring, turned hub, anti-skate / lift lever */
+#armbase .scale { position: absolute; inset: 5%; border-radius: 50%; pointer-events: none;
+  background: repeating-conic-gradient(rgba(0,0,0,.6) 0 .7deg, transparent .7deg 5deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 82%, #000 83% 93%, transparent 94%); mask: radial-gradient(circle closest-side, transparent 0 82%, #000 83% 93%, transparent 94%); }
+#armbase .hub { position: absolute; inset: 26%; border-radius: 50%;
+  background: radial-gradient(circle, transparent 0 66%, rgba(0,0,0,.5) 67% 70%, transparent 71%),
+    repeating-radial-gradient(circle, rgba(255,255,255,.22) 0 calc(var(--u) * .12), rgba(0,0,0,.14) calc(var(--u) * .12) calc(var(--u) * .24)),
+    radial-gradient(circle at 35% 30%, var(--a-hi), var(--a-mid) 60%, var(--a-lo));
+  box-shadow: 0 0 0 calc(var(--u) * .2) rgba(0,0,0,.35), 0 calc(var(--u) * .3) calc(var(--u) * .5) rgba(0,0,0,.5); }
+#armbase .lift { position: absolute; left: 80%; top: 58%; width: calc(var(--u) * 1); height: calc(var(--u) * 6.4); border-radius: 99px; transform-origin: 50% 0; transform: rotate(-26deg);
+  background: linear-gradient(90deg, var(--a-lo), var(--a-hi) 45%, var(--a-lo)); box-shadow: 0 calc(var(--u) * .35) calc(var(--u) * .5) rgba(0,0,0,.5); }
+#armbase .lift b { position: absolute; left: -45%; bottom: calc(var(--u) * -1.1); width: 190%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--a-hi), var(--a-mid) 58%, var(--a-lo)); box-shadow: 0 calc(var(--u) * .3) calc(var(--u) * .5) rgba(0,0,0,.5); }
+#tonearm .tip { fill: var(--tip); }
+
+/* pitch scale numbers */
+#pitch .ps { position: absolute; left: calc(var(--u) * 6.9); font: 600 calc(var(--u) * .68) -apple-system, "Segoe UI", sans-serif; color: var(--ink); letter-spacing: .04em; }
+#pitch .ps.t { top: calc(var(--u) * 2.5); } #pitch .ps.m { top: calc(var(--u) * 14.5); } #pitch .ps.b { top: calc(var(--u) * 26.5); }
+#pitch .fader { background: repeating-linear-gradient(180deg, transparent 0 calc(var(--u) * .22), rgba(0,0,0,.2) calc(var(--u) * .22) calc(var(--u) * .3)), linear-gradient(180deg, var(--k-hi), var(--k-mid) 55%, var(--k-lo)); }
+
+/* power knob: knurled edge and scale arc */
+#powerknob b { position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: repeating-conic-gradient(rgba(0,0,0,.3) 0 1.8deg, rgba(255,255,255,.12) 1.8deg 3.6deg, transparent 3.6deg 7.2deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 76%, #000 79%); mask: radial-gradient(circle closest-side, transparent 0 76%, #000 79%); }
+#powerknob::after { content: ""; position: absolute; inset: calc(var(--u) * -.85); border-radius: 50%; pointer-events: none;
+  background: repeating-conic-gradient(from -62deg, var(--ink) 0 1.5deg, transparent 1.5deg 11.2deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 87%, #000 89%), conic-gradient(from -62deg, #000 0 112deg, transparent 112deg); -webkit-mask-composite: source-in;
+  mask: radial-gradient(circle closest-side, transparent 0 87%, #000 89%), conic-gradient(from -62deg, #000 0 112deg, transparent 112deg); mask-composite: intersect; }
+
+/* buttons: concave caps; LED lens; display glass; badge rivets */
+.pbtn::before { content: ""; position: absolute; inset: 13%; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at 62% 72%, rgba(255,255,255,.28), transparent 48%), radial-gradient(circle at 38% 28%, rgba(0,0,0,.22), transparent 60%);
+  box-shadow: inset 0 0 0 calc(var(--u) * .12) rgba(0,0,0,.26), 0 calc(var(--u) * .08) 0 rgba(255,255,255,.25); }
+.pbtn span { position: relative; z-index: 1; }
+#led::after { content: ""; position: absolute; left: 20%; top: 14%; width: 38%; height: 30%; border-radius: 50%; background: rgba(255,255,255,.5); filter: blur(.5px); }
+#vfd::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(165deg, rgba(255,255,255,.11) 0 38%, transparent 39%), repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px calc(var(--u) * .3)); }
+#badge::before, #badge::after { content: ""; position: absolute; top: 50%; width: calc(var(--u) * .5); height: calc(var(--u) * .5); margin-top: calc(var(--u) * -.25); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.75), rgba(0,0,0,.45) 72%); }
+#badge::before { left: calc(var(--u) * .7); } #badge::after { right: calc(var(--u) * .7); }
+
+/* the plinth casts a soft coloured glow onto the table it stands on */
+#plinth::after { left: 4%; right: 4%; top: 100%; bottom: auto; height: calc(var(--u) * 5); inset: auto; border-radius: 50%; z-index: -1;
+  background: radial-gradient(ellipse at 50% 0, rgba(var(--amb), .3), transparent 70%); filter: blur(calc(var(--u) * 1)); }

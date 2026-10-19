@@ -2,7 +2,7 @@
 // Starts a hidden Chrome (headless, no window on the desktop), loads the page and saves a PNG at each time (ms after load).
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
-const [url, prefix, times = '3000', W = '1366', H = '1024'] = process.argv.slice(2);
+const [url, prefix, times = '3000', W = '1366', H = '1024', SCALE = '1', CLIP = ''] = process.argv.slice(2); // CLIP = 'x,y,w,h' in CSS px: saves only that region, at SCALE x
 const chrome = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe',
   ['--headless=new', '--disable-gpu', '--remote-debugging-port=9333', '--user-data-dir=' + process.env.TEMP + '/vdp-shot', '--hide-scrollbars', `--window-size=${W},${H}`, 'about:blank'], { stdio: 'ignore' });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -13,13 +13,13 @@ ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id
   if (m.method === 'Runtime.exceptionThrown') console.log('PAGE ERROR:', m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text);
   if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') console.log('console.error:', m.params.args.map(a => a.value || a.description).join(' ')); };
 const send = (method, params = {}) => new Promise(r => { pending.set(++id, r); ws.send(JSON.stringify({ id, method, params })); });
-await send('Emulation.setDeviceMetricsOverride', { width: +W, height: +H, deviceScaleFactor: 1, mobile: false });
+await send('Emulation.setDeviceMetricsOverride', { width: +W, height: +H, deviceScaleFactor: +SCALE, mobile: false });
 await send('Page.enable'); await send('Runtime.enable'); await send('Page.navigate', { url });
 const t0 = Date.now();
 for (const t of times.split(',').map(Number)) {
   await sleep(Math.max(0, t - (Date.now() - t0)));
   const jpg = prefix.endsWith('.jpg'), file = jpg ? prefix : `${prefix}-${t}.png`; // a .jpg prefix saves one JPEG with exactly that name
-  const r = await send('Page.captureScreenshot', jpg ? { format: 'jpeg', quality: 84 } : { format: 'png' });
+  const r = await send('Page.captureScreenshot', { ...(jpg ? { format: 'jpeg', quality: 84 } : { format: 'png' }), ...(CLIP ? (([x, y, w, h]) => ({ clip: { x, y, width: w, height: h, scale: 1 } }))(CLIP.split(',').map(Number)) : {}) });
   writeFileSync(file, Buffer.from(r.data, 'base64')); console.log('saved', file, 'at', Date.now() - t0, 'ms');
 }
 ws.close(); chrome.kill();

@@ -20,14 +20,14 @@
 
 <main id="stage">
   <div id="plinth">
-    <div id="deco"><i></i></div>
+    <div id="deco"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4"></i><i class="d5"></i><i class="d6"></i></div>
     <i class="screw" style="left:2.2%;top:2.9%"></i><i class="screw" style="right:2.2%;top:2.9%"></i>
     <i class="screw" style="left:2.2%;bottom:2.9%"></i><i class="screw" style="right:2.2%;bottom:2.9%"></i>
 
     <i class="hinge hl"></i><i class="hinge hr"></i>
     <div id="led"></div>
-    <div id="powerknob"><i></i></div>
-    <div id="pitch"><span class="lab">PITCH</span><div class="slot"><div class="fader"></div></div></div>
+    <div id="powerknob"><i></i><b></b></div>
+    <div id="pitch"><span class="lab">PITCH</span><b class="ps t">+8</b><b class="ps m">0</b><b class="ps b">−8</b><div class="slot"><div class="fader"></div></div></div>
     <div id="vfd" title="Tap: clock / time left"><span class="ghost">88:88</span><span id="vfdText"></span><i id="vfdMode"></i><i id="vfdSleep">SLEEP</i></div>
     <div id="badge"><b>VINYL</b><span>DECO · HI-FI</span></div>
 
@@ -49,33 +49,57 @@
     <div id="target"><i></i></div>
     <div id="armrest"><i></i></div>
     <div id="antiskate"><div class="dial"></div>ANTI-SKATE</div>
-    <div id="armbase"><div class="ring"></div></div>
+    <div id="armbase"><i class="scale"></i><div class="ring"></div><i class="hub"></i><i class="lift"><b></b></i></div>
     <div id="tonearm">
       <svg viewBox="-8 -12 20 56" width="20" height="56" aria-hidden="true">
         <defs>
-          <linearGradient id="gm" x1="0" x2="1"><stop offset="0" style="stop-color:var(--a-lo)"/><stop offset=".45" style="stop-color:var(--a-hi)"/><stop offset="1" style="stop-color:var(--a-lo)"/></linearGradient>
+          <linearGradient id="gm" x1="0" x2="1"><stop offset="0" style="stop-color:var(--a-lo)"/><stop offset=".3" style="stop-color:var(--a-mid)"/><stop offset=".48" style="stop-color:var(--a-hi)"/><stop offset="1" style="stop-color:var(--a-lo)"/></linearGradient>
+          <linearGradient id="gw" x1="0" x2="1"><stop offset="0" style="stop-color:var(--w-lo)"/><stop offset=".22" style="stop-color:var(--w-mid)"/><stop offset=".36" style="stop-color:var(--w-hi)"/><stop offset=".55" style="stop-color:var(--w-mid)"/><stop offset="1" style="stop-color:var(--w-lo)"/></linearGradient>
           <radialGradient id="gc" cx=".35" cy=".3"><stop offset="0" style="stop-color:var(--a-hi)"/><stop offset=".6" style="stop-color:var(--a-mid)"/><stop offset="1" style="stop-color:var(--a-lo)"/></radialGradient>
           <linearGradient id="gh" x1="0" x2="1"><stop offset="0" style="stop-color:var(--h-lo)"/><stop offset=".5" style="stop-color:var(--h-hi)"/><stop offset="1" style="stop-color:var(--h-lo)"/></linearGradient>
-          <linearGradient id="gg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d9a33f"/><stop offset="1" stop-color="#8a5e16"/></linearGradient>
+          <linearGradient id="gg" x1="0" x2="1"><stop offset="0" style="stop-color:var(--cart-lo)"/><stop offset=".45" style="stop-color:var(--cart)"/><stop offset="1" style="stop-color:var(--cart-lo)"/></linearGradient>
         </defs>
-        <rect x="-2.3" y="-11.5" width="4.6" height="7.5" rx=".9" fill="url(#gm)"/>
-        <rect x="-2.3" y="-8.6" width="4.6" height=".35" style="fill:rgba(0,0,0,.45)"/><rect x="-2.3" y="-6.9" width="4.6" height=".35" style="fill:rgba(0,0,0,.45)"/>
+        <!-- counterweight: stem, turned cylinder with grooves, end cap, accent band and scale ticks -->
+        <rect x="-.55" y="-5" width="1.1" height="2" style="fill:url(#gm)"/>
+        <rect x="-2.75" y="-11.7" width="5.5" height="7.2" rx=".9" fill="url(#gw)"/>
+        <rect x="-2.75" y="-11.7" width="5.5" height=".95" rx=".6" style="fill:rgba(0,0,0,.4)"/>
+        <g style="fill:rgba(0,0,0,.5)"><rect x="-2.75" y="-10.2" width="5.5" height=".2"/><rect x="-2.75" y="-9.1" width="5.5" height=".2"/><rect x="-2.75" y="-8" width="5.5" height=".2"/></g>
+        <g style="fill:rgba(255,255,255,.38)"><rect x="-2.75" y="-10" width="5.5" height=".1"/><rect x="-2.75" y="-8.9" width="5.5" height=".1"/><rect x="-2.75" y="-7.8" width="5.5" height=".1"/></g>
+        <rect x="-2.75" y="-6.9" width="5.5" height=".85" style="fill:var(--w-band)"/>
+        <g style="fill:var(--w-tick)"><rect x="-2.3" y="-5.9" width=".14" height=".9"/><rect x="-1.55" y="-5.9" width=".14" height=".9"/><rect x="-.8" y="-5.9" width=".14" height=".9"/><rect x="-.07" y="-5.9" width=".14" height=".9"/><rect x=".66" y="-5.9" width=".14" height=".9"/><rect x="1.41" y="-5.9" width=".14" height=".9"/><rect x="2.16" y="-5.9" width=".14" height=".9"/></g>
+        <circle cx="0" cy="-10.5" r=".38" style="fill:rgba(0,0,0,.55)"/>
         <path class="hit" d="M0 -6 L0 12 C0 21 3.2 23 3.2 31 L3.2 42" fill="none" stroke="transparent" stroke-width="5" pointer-events="stroke"/>
         <g class="arm-s">
           <path d="M0 -4 L0 12 C0 21 3.2 23 3.2 31 L3.2 35.5" fill="none" style="stroke:var(--t-lo)" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M0 -4 L0 12 C0 21 3.2 23 3.2 31 L3.2 35.5" fill="none" style="stroke:var(--t-mid)" stroke-width="1.05" stroke-linecap="round"/>
           <path d="M-.2 -4 L-.2 12 C-.2 21 3 23 3 31 L3 35.5" fill="none" style="stroke:var(--t-hi)" stroke-width=".3" stroke-linecap="round" opacity=".9"/>
+          <rect x="-1" y="2.4" width="2" height=".7" rx=".25" style="fill:url(#gm)"/><rect x="-1" y="6.2" width="2" height=".4" rx=".2" style="fill:url(#gm)"/>
+          <rect x="2.2" y="30" width="2" height=".45" rx=".2" style="fill:url(#gm)"/>
         </g>
         <g class="arm-x">
           <path d="M0 -4 L2.75 31 Q3.2 33.2 3.2 35.5" fill="none" style="stroke:var(--t-lo)" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M0 -4 L2.75 31 Q3.2 33.2 3.2 35.5" fill="none" style="stroke:var(--t-mid)" stroke-width="1.05" stroke-linecap="round"/>
           <path d="M-.2 -4 L2.55 31 Q3 33.2 3 35.5" fill="none" style="stroke:var(--t-hi)" stroke-width=".3" stroke-linecap="round" opacity=".9"/>
+          <rect x="-.4" y="2.4" width="2" height=".7" rx=".25" transform="rotate(-4 .6 2.7)" style="fill:url(#gm)"/><rect x="-.4" y="6.2" width="2" height=".4" rx=".2" transform="rotate(-4 .6 6.4)" style="fill:url(#gm)"/>
+          <rect x="2.2" y="30" width="2" height=".45" rx=".2" style="fill:url(#gm)"/>
         </g>
+        <!-- headshell, cartridge, stylus, finger lift -->
         <path d="M1.9 35 L4.5 35 L5.1 41.8 L1.3 41.8 Z" fill="url(#gh)"/>
-        <rect x="2.15" y="39.4" width="2.1" height="2.7" rx=".25" fill="url(#gg)"/>
-        <rect x="1.7" y="36.2" width=".55" height=".55" style="fill:var(--a-mid)"/><rect x="4.1" y="36.2" width=".55" height=".55" style="fill:var(--a-mid)"/>
+        <path d="M2.3 36 L4.1 36 L4.5 41.2 L1.9 41.2 Z" style="fill:rgba(255,255,255,.07)"/>
+        <rect x="2.05" y="37.3" width="2.4" height="3.9" rx=".3" fill="url(#gg)"/>
+        <rect x="2.05" y="37.3" width="2.4" height=".5" rx=".25" style="fill:rgba(255,255,255,.5)"/>
+        <rect x="2.5" y="38.4" width="1.5" height=".16" style="fill:rgba(0,0,0,.35)"/>
+        <rect x="1.7" y="35.8" width=".55" height=".55" style="fill:var(--a-mid)"/><rect x="4.1" y="35.8" width=".55" height=".55" style="fill:var(--a-mid)"/>
+        <path d="M2.9 41.2 L3.6 41.2 L3.25 42.6 Z" style="fill:#d4d4d4"/>
+        <circle class="tip" cx="3.25" cy="42.4" r=".55"/>
         <path d="M4.9 38.2 Q8.3 38.6 8.6 36" fill="none" style="stroke:var(--t-mid)" stroke-width=".5" stroke-linecap="round"/>
-        <circle cx="0" cy="0" r="2.3" fill="url(#gc)"/><circle cx="0" cy="0" r=".7" style="fill:var(--h-lo)"/>
+        <circle cx="8.6" cy="35.9" r=".42" style="fill:var(--t-mid)"/>
+        <!-- pivot -->
+        <circle cx="0" cy="0" r="2.5" style="fill:rgba(0,0,0,.35)"/>
+        <circle cx="0" cy="0" r="2.3" fill="url(#gc)"/>
+        <circle cx="0" cy="0" r="1.55" fill="none" style="stroke:rgba(0,0,0,.32)" stroke-width=".16"/>
+        <circle cx="0" cy="0" r=".95" fill="none" style="stroke:rgba(255,255,255,.4)" stroke-width=".12"/>
+        <circle cx="0" cy="0" r=".7" style="fill:var(--h-lo)"/>
       </svg>
     </div>
 
