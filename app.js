@@ -598,7 +598,7 @@ function demoSkip(d) {
 }
 function demo() {
   const mode = new URLSearchParams(location.search).get('demo');
-  S.track = DEMO_TRACKS[0]; S.dur = 200000; S.pos = 40000; S.stamp = Date.now(); S.paused = true;
+  S.track = mode === 'long' ? { ...DEMO_TRACKS[0], name: 'A Very Long Song Title That Keeps Going (Remastered 2011 · Live at the Royal Albert Hall)', artist: 'The Extremely Long Named Orchestra, Featuring Many Guests' } : DEMO_TRACKS[0]; S.dur = 200000; S.pos = 40000; S.stamp = Date.now(); S.paused = true;
   showTrack(S.track); showControls();
   swapRecord(S.track, mode !== 'paused');
   if (mode === 'swap') setTimeout(() => demoSkip(1), 6500);
