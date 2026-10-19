@@ -249,7 +249,6 @@ function onState(s) {
   if (S.expect === track.id) S.expect = null;
   const changed = !S.track || S.track.id !== track.id;
   S.paused = s.paused; S.pos = s.position; S.dur = s.duration || 1; S.stamp = Date.now();
-  $('bShuffle').classList.toggle('on', !!s.shuffle);
   if (changed) {
     S.track = track; showTrack(track);
     const playing = !s.paused || S.holdResume;
@@ -262,18 +261,24 @@ function onState(s) {
 setInterval(renderArm, 1000);
 
 /* ---------- actions ---------- */
-async function play(body, remember) {
+let shuffleOn = !!store.get('shuffle');
+const setShuffle = on => api('/me/player/shuffle?state=' + on + '&device_id=' + S.deviceId, { method: 'PUT' });
+async function play(body, remember, total) { // total = number of tracks, so a shuffled start can be a random track
   if (DEMO) return toast('Demo mode: Spotify is not connected');
   if (!S.deviceId) return toast('Player is still starting, try again in a moment');
   await S.player.activateElement();
-  await api('/me/player/play?device_id=' + S.deviceId, { method: 'PUT', body: JSON.stringify(body) });
+  const b = { ...body };
+  if (shuffleOn && total > 1 && b.context_uri && !b.offset) b.offset = { position: Math.floor(Math.random() * total) };
+  try { await setShuffle(shuffleOn); } catch { /* playing still works without it */ }
+  await api('/me/player/play?device_id=' + S.deviceId, { method: 'PUT', body: JSON.stringify(b) });
   if (remember) store.set('last', body);
 }
-const playSafe = (body, remember) => play(body, remember).catch(e => toast(e.message));
+const playSafe = (body, remember, total) => play(body, remember, total).catch(e => toast(e.message));
 async function playLiked() {
   try {
     if (!S.userId) S.userId = (await api('/me')).id;
-    await play({ context_uri: `spotify:user:${S.userId}:collection` }, true);
+    const total = shuffleOn ? (await api('/me/tracks?limit=1')).total : 0;
+    await play({ context_uri: `spotify:user:${S.userId}:collection` }, true, total);
   } catch { // fallback: queue the newest liked songs directly
     try { const d = await api('/me/tracks?limit=50'); await play({ uris: d.items.map(i => i.track.uri) }, true); } catch (e) { toast(e.message); }
   }
@@ -325,6 +330,7 @@ async function renderTab() {
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   const box = $('lists'); box.innerHTML = '<div class="loading">Loading…</div>'; $('count').textContent = '';
   try {
+    if (tab === 'search') return renderSearch(box);
     if (DEMO) { box.innerHTML = ''; DEMO_TRACKS.forEach(t => box.appendChild(card(t.art, t.name, t.artist, () => toast('Demo mode')))); return; }
     if (tab === 'playlists') {
       const items = loaded.playlists || (loaded.playlists = await apiAll('/me/playlists?limit=50'));
@@ -332,7 +338,7 @@ async function renderTab() {
       if (hasScope('user-library-read')) box.appendChild(card(null, 'Liked Songs', 'Your library', playLiked, 'liked'));
       items.forEach(p => box.appendChild(card(p.images && p.images[0] && p.images[0].url, p.name,
         (p.items || p.tracks) ? (p.items || p.tracks).total + ' tracks' : 'by ' + ((p.owner && p.owner.display_name) || 'Spotify'),
-        () => playSafe({ context_uri: p.uri }, true))));
+        () => playSafe({ context_uri: p.uri }, true, (p.items || p.tracks || {}).total || 0))));
       $('count').textContent = items.length + ' playlists';
       if (!hasScope('user-library-read')) needLibrary(box);
     } else if (tab === 'albums') {
@@ -340,7 +346,7 @@ async function renderTab() {
       const items = loaded.albums || (loaded.albums = await apiAll('/me/albums?limit=50', 500));
       box.innerHTML = '';
       items.forEach(({ album: a }) => box.appendChild(card(a.images[0] && a.images[0].url, a.name, a.artists.map(x => x.name).join(', '),
-        () => playSafe({ context_uri: a.uri }, true))));
+        () => playSafe({ context_uri: a.uri }, true, a.total_tracks || 0))));
       $('count').textContent = items.length + ' albums';
       if (!items.length) box.textContent = 'No saved albums yet.';
     } else {
@@ -354,6 +360,39 @@ async function renderTab() {
 }
 function openSheet() { $('sheet').classList.remove('hidden'); hideControlsSoon(true); renderTab(); }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; renderTab(); });
+
+/* search: songs, albums, playlists and artists from all of Spotify */
+let searchQ = '', searchTimer;
+function renderSearch(box) {
+  box.innerHTML = ''; $('count').textContent = '';
+  const inp = document.createElement('input'); inp.id = 'q'; inp.type = 'search'; inp.placeholder = 'Search songs, albums, artists, playlists'; inp.value = searchQ;
+  inp.setAttribute('autocomplete', 'off'); inp.setAttribute('autocorrect', 'off'); inp.setAttribute('autocapitalize', 'off'); inp.enterKeyHint = 'search';
+  const out = document.createElement('div'); out.id = 'results';
+  box.appendChild(inp); box.appendChild(out);
+  const go = async () => {
+    searchQ = inp.value.trim(); clearTimeout(searchTimer);
+    if (searchQ.length < 2) { out.innerHTML = '<div class="loading">Type at least two letters.</div>'; return; }
+    out.innerHTML = '<div class="loading">Searching…</div>';
+    try {
+      const r = DEMO ? { tracks: { items: DEMO_TRACKS.filter(t => (t.name + t.artist).toLowerCase().includes(searchQ.toLowerCase())).map(t => ({ uri: t.uri, name: t.name, artists: [{ name: t.artist }], album: { images: [{ url: t.art }] } })) } }
+        : await api('/search?type=track,album,artist,playlist&limit=10&q=' + encodeURIComponent(searchQ));
+      if (inp.value.trim() !== searchQ) return; // a newer search is already running
+      out.innerHTML = '';
+      const sec = (title, items, make) => { items = (items || []).filter(Boolean); if (!items.length) return 0;
+        const h = document.createElement('div'); h.className = 'sec'; h.textContent = title; out.appendChild(h); items.forEach(i => out.appendChild(make(i))); return items.length; };
+      const img = o => (o.images && o.images[0] && o.images[0].url) || (o.album && o.album.images && o.album.images[0] && o.album.images[0].url);
+      let n = 0;
+      n += sec('Songs', r.tracks && r.tracks.items, t => card(img(t), t.name, t.artists.map(a => a.name).join(', '), () => playSafe({ uris: [t.uri] }, true)));
+      n += sec('Albums', r.albums && r.albums.items, a => card(img(a), a.name, a.artists.map(x => x.name).join(', '), () => playSafe({ context_uri: a.uri }, true, a.total_tracks || 0)));
+      n += sec('Artists', r.artists && r.artists.items, a => card(img(a), a.name, 'Artist', () => playSafe({ context_uri: a.uri }, true), 'artist'));
+      n += sec('Playlists', r.playlists && r.playlists.items, p => card(img(p), p.name, 'by ' + ((p.owner && p.owner.display_name) || 'Spotify'), () => playSafe({ context_uri: p.uri }, true)));
+      if (!n) out.innerHTML = '<div class="loading">Nothing found for "' + esc(searchQ) + '".</div>';
+    } catch (e) { out.innerHTML = '<div class="loading">Search failed: ' + esc(e.message) + '</div>'; }
+  };
+  inp.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(go, 450); });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); go(); } });
+  if (searchQ) go(); else { out.innerHTML = '<div class="loading">Find any song on Spotify, not just your own playlists.</div>'; setTimeout(() => inp.focus(), 50); }
+}
 
 /* ---------- display on the plinth: clock, song time, pitch, sleep timer ---------- */
 let vfdMode = store.get('vfd') || 'clock', vfdFlash = null, vfdFlashUntil = 0, sleepAt = 0;
@@ -448,9 +487,11 @@ $('spd33').classList.add('on');
 
 $('bPlay').onclick = togglePlay; $('bNext').onclick = next; $('bPrev').onclick = prev;
 $('bPlaylists').onclick = openSheet; $('sheetClose').onclick = () => $('sheet').classList.add('hidden');
+$('bShuffle').classList.toggle('on', shuffleOn);
 $('bShuffle').onclick = async () => {
-  const on = !$('bShuffle').classList.contains('on');
-  try { if (!DEMO) await api('/me/player/shuffle?state=' + on + '&device_id=' + S.deviceId, { method: 'PUT' }); $('bShuffle').classList.toggle('on', on); } catch (e) { toast(e.message); }
+  shuffleOn = !shuffleOn; store.set('shuffle', shuffleOn); $('bShuffle').classList.toggle('on', shuffleOn);
+  toast(shuffleOn ? 'Shuffle on: a playlist or album starts on a random song' : 'Shuffle off');
+  if (!DEMO && S.deviceId && S.track) setShuffle(shuffleOn).catch(() => {}); // also change what is playing now
 };
 $('bNight').onclick = () => { document.body.classList.toggle('night'); $('bNight').classList.toggle('on', document.body.classList.contains('night')); store.set('night', document.body.classList.contains('night')); };
 if (store.get('night')) { document.body.classList.add('night'); $('bNight').classList.add('on'); }
@@ -563,5 +604,6 @@ function demo() {
   if (mode === 'swap') setTimeout(() => demoSkip(1), 6500);
   if (mode === 'sheet') openSheet();
   if (mode === 'skins') openSkins();
+  if (mode === 'search') { tab = 'search'; searchQ = 'ee'; openSheet(); }
 }
 init();
