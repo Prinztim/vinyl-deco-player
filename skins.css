@@ -429,7 +429,6 @@ html[data-skin="marble"] {
 [data-skin="acrylic"] .playing #tonearm .tip { filter: drop-shadow(0 0 .5px #ff4fd8) drop-shadow(0 0 1.4px #ff4fd8); }
 [data-skin="acrylic"] #plinth::after { height: calc(var(--u) * 7); left: 0; right: 0; background: linear-gradient(90deg, rgba(79,123,255,.75), rgba(140,92,255,.6) 50%, rgba(224,77,255,.75)); filter: blur(calc(var(--u) * 2)); border-radius: 0; opacity: .75; }
 [data-skin="acrylic"] #ambient { background: radial-gradient(ellipse 70% 40% at 50% 100%, rgba(150,90,255,.28), transparent 70%), radial-gradient(ellipse 80% 70% at 46% 45%, rgba(var(--amb), .22), transparent 70%), var(--room); }
-[data-skin="acrylic"] #badge::before, [data-skin="acrylic"] #badge::after { display: none; }
 
 
 /* ---------- ART DECO ---------- */
@@ -463,9 +462,7 @@ html[data-skin="marble"] {
 [data-skin="deco"] #powerknob { background: radial-gradient(circle, transparent 0 40%, rgba(0,0,0,.22) 41% 43%, transparent 44%), repeating-conic-gradient(rgba(0,0,0,.07) 0 6deg, transparent 6deg 12deg), radial-gradient(circle at 38% 30%, var(--k-hi), var(--k-mid) 58%, var(--k-lo)); }
 [data-skin="deco"] .pbtn:not(.wide)::before { box-shadow: inset 0 0 0 calc(var(--u) * .12) rgba(0,0,0,.2), 0 0 0 calc(var(--u) * .1) rgba(255,255,255,.6); }
 [data-skin="deco"] #antiskate .dial { background: repeating-conic-gradient(#d7c9a6 0 6deg, #8f8062 6deg 12deg); }
-[data-skin="deco"] .pbtn.wide::before { box-shadow: inset 0 0 0 calc(var(--u) * .12) rgba(28,20,8,.5); }
 [data-skin="deco"] #badge { box-shadow: none; filter: drop-shadow(0 calc(var(--u) * .3) calc(var(--u) * .5) rgba(0,0,0,.7)); }
-[data-skin="deco"] #badge::before, [data-skin="deco"] #badge::after { background: radial-gradient(circle at 35% 30%, #fff3c4, #7c5a1c 70%); }
 [data-skin="deco"] #pitch .slot { box-shadow: inset 0 1px 3px #000, 0 0 0 calc(var(--u) * .28) var(--gold), 0 0 0 calc(var(--u) * .48) #000, 0 0 0 calc(var(--u) * .6) rgba(201,161,74,.4); }
 [data-skin="deco"] #armbase { background: radial-gradient(circle, var(--h-lo) 0 24%, transparent 25%), conic-gradient(from 0deg, #8b9096, #fff, #7c8188, #e8e8e8, #5b6067, #f4f4f4, #8b9096); }
 [data-skin="deco"] #rim::before { box-shadow: inset 0 0 0 1px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.5), 0 0 0 calc(var(--u) * .45) rgba(201,161,74,.0); }
@@ -507,7 +504,6 @@ html[data-skin="marble"] {
 [data-skin="cream"] #armbase .lift { background: linear-gradient(90deg, #0a0a0a, #4a4a4a 45%, #0a0a0a); }
 [data-skin="cream"] #armbase .lift b { background: radial-gradient(circle at 35% 30%, #5a5a5a, #1a1a1a 60%, #050505); }
 [data-skin="cream"] #armrest::before, [data-skin="cream"] #armrest::after { background: linear-gradient(90deg, #0a0a0a, #4a4a4a 45%, #0a0a0a); }
-[data-skin="cream"] #badge::before, [data-skin="cream"] #badge::after { display: none; }
 [data-skin="cream"] #plinth::after { background: radial-gradient(ellipse at 50% 0, rgba(0,0,0,.35), transparent 70%); }
 
 
@@ -546,7 +542,6 @@ html[data-skin="marble"] {
 [data-skin="dj"] #armbase .scale { background: repeating-conic-gradient(rgba(255,60,60,.9) 0 .8deg, transparent .8deg 5deg); }
 [data-skin="dj"] #armbase .hub { background: radial-gradient(circle, transparent 0 66%, rgba(0,0,0,.5) 67% 70%, transparent 71%), repeating-radial-gradient(circle, rgba(255,255,255,.2) 0 calc(var(--u) * .12), rgba(0,0,0,.2) calc(var(--u) * .12) calc(var(--u) * .24)), radial-gradient(circle at 35% 30%, #d9dadc, #8a8d91 60%, #3b3e42); }
 [data-skin="dj"] .playing #tonearm .tip { filter: drop-shadow(0 0 .5px #ff3030) drop-shadow(0 0 1.3px #ff2020); }
-[data-skin="dj"] #badge::before, [data-skin="dj"] #badge::after { display: none; }
 
 
 /* ---------- MARBLE ---------- */
@@ -569,7 +564,6 @@ html[data-skin="marble"] {
 [data-skin="marble"] .foot { background: linear-gradient(90deg, #6e4f1c, #fcefc4 40%, #8c6f30); }
 [data-skin="marble"] #armbase { background: radial-gradient(circle, #14110d 0 24%, transparent 25%), conic-gradient(from 0deg, #a8863a, #fcefc4, #b8903f, #f3dc98, #8c6f30, #fcefc4, #a8863a); }
 [data-skin="marble"] #armbase .scale { background: repeating-conic-gradient(rgba(60,40,10,.7) 0 .7deg, transparent .7deg 5deg); }
-[data-skin="marble"] #badge::before, [data-skin="marble"] #badge::after { background: radial-gradient(circle at 35% 30%, #fff3c4, #7c5a1c 70%); }
 [data-skin="marble"] #armrest i { border-color: #26211a; }
 /* daylight through a window: leaf shadows and soft light on the table */
 [data-skin="marble"] #ambient { background: radial-gradient(ellipse 80% 70% at 46% 45%, rgba(255,255,255,.55), transparent 70%), linear-gradient(135deg, #efebe4, #dcd7cf); }

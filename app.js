@@ -518,12 +518,13 @@ function startPlayer() {
     getOAuthToken: cb => getToken().then(cb).catch(e => toast(e.message)) });
   S.player = p;
   p.addListener('ready', ({ device_id }) => { S.deviceId = device_id; });
-  p.addListener('not_ready', () => { S.deviceId = null; });
+  p.addListener('not_ready', () => { S.deviceId = null; setTimeout(() => S.player && !S.deviceId && S.player.connect(), 2500); }); // reconnect after a drop
   p.addListener('player_state_changed', onState);
   p.addListener('initialization_error', e => toast('Player: ' + e.message));
   p.addListener('authentication_error', e => { toast('Login problem: ' + e.message); store.del('auth'); showConnect(); });
   p.addListener('account_error', () => toast('Spotify Premium is required to play music here'));
   p.addListener('playback_error', e => toast('Playback: ' + e.message));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !S.deviceId) p.connect(); }); // coming back from the Home Screen / lock screen
   p.connect();
 }
 

@@ -282,10 +282,10 @@ body.lidoff #lid { opacity: 0; transform: translateY(calc(var(--u) * -1.2)); }
 #led::after { content: ""; position: absolute; left: 20%; top: 14%; width: 38%; height: 30%; border-radius: 50%; background: rgba(255,255,255,.5); filter: blur(.5px); }
 #vfd::after { content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(165deg, rgba(255,255,255,.11) 0 38%, transparent 39%), repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px calc(var(--u) * .3)); }
-#badge::before, #badge::after { content: ""; position: absolute; top: 50%; width: calc(var(--u) * .5); height: calc(var(--u) * .5); margin-top: calc(var(--u) * -.25); border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.75), rgba(0,0,0,.45) 72%); }
-#badge::before { left: calc(var(--u) * .7); } #badge::after { right: calc(var(--u) * .7); }
-
 /* the plinth casts a soft coloured glow onto the table it stands on */
 #plinth::after { left: 4%; right: 4%; top: 100%; bottom: auto; height: calc(var(--u) * 5); inset: auto; border-radius: 50%; z-index: -1;
   background: radial-gradient(ellipse at 50% 0, rgba(var(--amb), .3), transparent 70%); filter: blur(calc(var(--u) * 1)); }
+
+.pbtn.wide::before { inset: 0; box-shadow: none; background: linear-gradient(180deg, rgba(255,255,255,.22), transparent 45%, rgba(0,0,0,.12)); }
+/* anti-skate dial: lower and further from the frame */
+#antiskate { left: calc(var(--u) * 90); top: calc(var(--u) * 54); }
