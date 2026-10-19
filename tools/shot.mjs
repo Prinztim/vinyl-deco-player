@@ -1,4 +1,4 @@
-// Screenshot helper: node shot.mjs <url> <out-prefix> <ms1,ms2,...> [width] [height]
+// Screenshot helper: node shot.mjs <url> <out-prefix|file.jpg> <ms1,ms2,...> [width] [height]
 // Starts a hidden Chrome (headless, no window on the desktop), loads the page and saves a PNG at each time (ms after load).
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
@@ -18,7 +18,8 @@ await send('Page.enable'); await send('Runtime.enable'); await send('Page.naviga
 const t0 = Date.now();
 for (const t of times.split(',').map(Number)) {
   await sleep(Math.max(0, t - (Date.now() - t0)));
-  const r = await send('Page.captureScreenshot', { format: 'png' });
-  writeFileSync(`${prefix}-${t}.png`, Buffer.from(r.data, 'base64')); console.log('saved', `${prefix}-${t}.png`, 'at', Date.now() - t0, 'ms');
+  const jpg = prefix.endsWith('.jpg'), file = jpg ? prefix : `${prefix}-${t}.png`; // a .jpg prefix saves one JPEG with exactly that name
+  const r = await send('Page.captureScreenshot', jpg ? { format: 'jpeg', quality: 84 } : { format: 'png' });
+  writeFileSync(file, Buffer.from(r.data, 'base64')); console.log('saved', file, 'at', Date.now() - t0, 'ms');
 }
 ws.close(); chrome.kill();

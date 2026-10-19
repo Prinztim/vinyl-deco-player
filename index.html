@@ -13,12 +13,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <title>Vinyl Deco Player</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="skins.css">
 </head>
 <body>
 <div id="ambient"></div>
 
 <main id="stage">
   <div id="plinth">
+    <div id="deco"><i></i></div>
     <i class="screw" style="left:2.2%;top:2.9%"></i><i class="screw" style="right:2.2%;top:2.9%"></i>
     <i class="screw" style="left:2.2%;bottom:2.9%"></i><i class="screw" style="right:2.2%;bottom:2.9%"></i>
 
@@ -44,28 +46,36 @@
       <div id="spindle"></div>
     </div>
 
+    <div id="target"><i></i></div>
     <div id="armrest"><i></i></div>
     <div id="antiskate"><div class="dial"></div>ANTI-SKATE</div>
     <div id="armbase"><div class="ring"></div></div>
     <div id="tonearm">
       <svg viewBox="-8 -12 20 56" width="20" height="56" aria-hidden="true">
         <defs>
-          <linearGradient id="gm" x1="0" x2="1"><stop offset="0" stop-color="#5d5d5d"/><stop offset=".45" stop-color="#e2e2e2"/><stop offset="1" stop-color="#6b6b6b"/></linearGradient>
-          <radialGradient id="gc" cx=".35" cy=".3"><stop offset="0" stop-color="#fafafa"/><stop offset=".6" stop-color="#8d8d8d"/><stop offset="1" stop-color="#4a4a4a"/></radialGradient>
-          <linearGradient id="gh" x1="0" x2="1"><stop offset="0" stop-color="#151515"/><stop offset=".5" stop-color="#3d3d3d"/><stop offset="1" stop-color="#131313"/></linearGradient>
+          <linearGradient id="gm" x1="0" x2="1"><stop offset="0" style="stop-color:var(--a-lo)"/><stop offset=".45" style="stop-color:var(--a-hi)"/><stop offset="1" style="stop-color:var(--a-lo)"/></linearGradient>
+          <radialGradient id="gc" cx=".35" cy=".3"><stop offset="0" style="stop-color:var(--a-hi)"/><stop offset=".6" style="stop-color:var(--a-mid)"/><stop offset="1" style="stop-color:var(--a-lo)"/></radialGradient>
+          <linearGradient id="gh" x1="0" x2="1"><stop offset="0" style="stop-color:var(--h-lo)"/><stop offset=".5" style="stop-color:var(--h-hi)"/><stop offset="1" style="stop-color:var(--h-lo)"/></linearGradient>
           <linearGradient id="gg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d9a33f"/><stop offset="1" stop-color="#8a5e16"/></linearGradient>
         </defs>
         <rect x="-2.3" y="-11.5" width="4.6" height="7.5" rx=".9" fill="url(#gm)"/>
-        <rect x="-2.3" y="-8.6" width="4.6" height=".35" fill="#444"/><rect x="-2.3" y="-6.9" width="4.6" height=".35" fill="#444"/>
+        <rect x="-2.3" y="-8.6" width="4.6" height=".35" style="fill:rgba(0,0,0,.45)"/><rect x="-2.3" y="-6.9" width="4.6" height=".35" style="fill:rgba(0,0,0,.45)"/>
         <path class="hit" d="M0 -6 L0 12 C0 21 3.2 23 3.2 31 L3.2 42" fill="none" stroke="transparent" stroke-width="5" pointer-events="stroke"/>
-        <path d="M0 -4 L0 12 C0 21 3.2 23 3.2 31 L3.2 35.5" fill="none" stroke="#5f5f5f" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M0 -4 L0 12 C0 21 3.2 23 3.2 31 L3.2 35.5" fill="none" stroke="#d6d6d6" stroke-width="1.05" stroke-linecap="round"/>
-        <path d="M-.2 -4 L-.2 12 C-.2 21 3 23 3 31 L3 35.5" fill="none" stroke="#fff" stroke-width=".3" stroke-linecap="round" opacity=".9"/>
+        <g class="arm-s">
+          <path d="M0 -4 L0 12 C0 21 3.2 23 3.2 31 L3.2 35.5" fill="none" style="stroke:var(--t-lo)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M0 -4 L0 12 C0 21 3.2 23 3.2 31 L3.2 35.5" fill="none" style="stroke:var(--t-mid)" stroke-width="1.05" stroke-linecap="round"/>
+          <path d="M-.2 -4 L-.2 12 C-.2 21 3 23 3 31 L3 35.5" fill="none" style="stroke:var(--t-hi)" stroke-width=".3" stroke-linecap="round" opacity=".9"/>
+        </g>
+        <g class="arm-x">
+          <path d="M0 -4 L2.75 31 Q3.2 33.2 3.2 35.5" fill="none" style="stroke:var(--t-lo)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M0 -4 L2.75 31 Q3.2 33.2 3.2 35.5" fill="none" style="stroke:var(--t-mid)" stroke-width="1.05" stroke-linecap="round"/>
+          <path d="M-.2 -4 L2.55 31 Q3 33.2 3 35.5" fill="none" style="stroke:var(--t-hi)" stroke-width=".3" stroke-linecap="round" opacity=".9"/>
+        </g>
         <path d="M1.9 35 L4.5 35 L5.1 41.8 L1.3 41.8 Z" fill="url(#gh)"/>
         <rect x="2.15" y="39.4" width="2.1" height="2.7" rx=".25" fill="url(#gg)"/>
-        <rect x="1.7" y="36.2" width=".55" height=".55" fill="#aaa"/><rect x="4.1" y="36.2" width=".55" height=".55" fill="#aaa"/>
-        <path d="M4.9 38.2 Q8.3 38.6 8.6 36" fill="none" stroke="#d8d8d8" stroke-width=".5" stroke-linecap="round"/>
-        <circle cx="0" cy="0" r="2.3" fill="url(#gc)"/><circle cx="0" cy="0" r=".7" fill="#333"/>
+        <rect x="1.7" y="36.2" width=".55" height=".55" style="fill:var(--a-mid)"/><rect x="4.1" y="36.2" width=".55" height=".55" style="fill:var(--a-mid)"/>
+        <path d="M4.9 38.2 Q8.3 38.6 8.6 36" fill="none" style="stroke:var(--t-mid)" stroke-width=".5" stroke-linecap="round"/>
+        <circle cx="0" cy="0" r="2.3" fill="url(#gc)"/><circle cx="0" cy="0" r=".7" style="fill:var(--h-lo)"/>
       </svg>
     </div>
 
@@ -93,6 +103,7 @@
   <button id="bNext" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18V6l8.5 6z"/></svg></button>
   <button id="bDust" aria-label="Vinyl crackle"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm0 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6.5 6.2l1 1.7-1.7 1-1-1.7zm11.3 9.6l1 1.7-1.7 1-1-1.7zM18 6l.9 1.8-1.8.9-.9-1.8z"/></svg></button>
   <button id="bTimer" aria-label="Sleep timer"><svg viewBox="0 0 24 24"><path d="M12 4a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm-1 2v5.4l4.2 2.5 1-1.6-3.2-1.9V8zM8 1h8v2H8z"/></svg></button>
+  <button id="bSkin" aria-label="Turntables"><svg viewBox="0 0 24 24"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 2v10h16V7zm6 1.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 2.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm6.5-2.8 1.4.6-1.9 5.2-1.4-.5z"/></svg></button>
   <button id="bLid" aria-label="Glass lid"><svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5v2l-9-5-9 5zm2 4h14v6H5zm2 2v2h10v-2z"/></svg></button>
   <button id="bNight" aria-label="Night mode"><svg viewBox="0 0 24 24"><path d="M12.3 3a9 9 0 1 0 8.7 11.6A7 7 0 0 1 12.3 3z"/></svg></button>
   <input id="vol" type="range" min="0" max="100" value="70" aria-label="Volume">
@@ -104,6 +115,11 @@
     <span id="count"></span><button id="sheetClose" aria-label="Close">✕</button>
   </div>
   <div id="lists"></div>
+</div>
+
+<div id="skinSheet" class="hidden">
+  <div id="skinHead"><span>Turntables</span><button id="skinClose" aria-label="Close">✕</button></div>
+  <div id="skinList"></div>
 </div>
 
 <div id="connect" class="hidden">

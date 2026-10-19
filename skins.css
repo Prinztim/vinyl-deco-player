@@ -1,0 +1,335 @@
+/* Turntable skins. The skin name sits on <html data-skin="...">; style.css draws the walnut deck from the
+   palette variables, each skin below swaps the palette and adds its own cabinet details. */
+
+/* ---------- shared ---------- */
+#deco { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; display: none; }
+#deco i { position: absolute; display: none; }
+#target { display: none; }
+.arm-x { display: none; }
+#stage { transition: opacity .3s; }
+#stage.swapskin { opacity: 0; }
+body.clean #controls, body.clean #nowplaying, body.clean #connect, body.clean #toast { display: none !important; }
+body.clean #plinth { --w: min(92vw, calc(88vh * 1.25)); }
+
+/* skin picker */
+#skinSheet { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(94vw, 1000px);
+  padding: 12px 16px 16px; border-radius: 22px; background: rgba(18,15,12,.93); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255,255,255,.08); z-index: 9; transition: opacity .3s, transform .3s; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+#skinSheet.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, 16px); }
+#skinHead { display: flex; justify-content: space-between; align-items: center; padding: 0 0 8px 8px; font-size: 18px; letter-spacing: .06em; color: #efe3cf; }
+#skinList { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(118px, 1fr); gap: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 4px 4px 2px; }
+.skin { width: auto; height: auto; border-radius: 12px; padding: 0; display: block; text-align: center; font: 13px -apple-system, "Segoe UI", sans-serif; color: rgba(233,223,207,.75); }
+.skin:active { background: none; }
+.skin img { width: 100%; aspect-ratio: 5 / 4; object-fit: cover; border-radius: 10px; display: block; background: #2a241d; transition: box-shadow .25s, transform .25s; }
+.skin span { display: block; margin-top: 7px; white-space: nowrap; }
+.skin:active img { transform: scale(.96); }
+.skin.on img { box-shadow: 0 0 0 2px #ffb038, 0 0 16px rgba(255,176,56,.4); }
+.skin.on span { color: #ffb038; }
+
+
+/* =====================================================================
+   TEAK: mid-century Danish. Oiled teak, cream felt mat, brass everywhere
+   ===================================================================== */
+html[data-skin="teak"] {
+  --room: #100a07;
+  --m-hi: #f8e6ad; --m-mid: #c49c4c; --m-lo: #7a5a22; --k-ink: #5a3f12;
+  --t-hi: #fff4cf; --t-mid: #d6b264; --t-lo: #6e4f1c;
+  --h-hi: #2c2622; --h-lo: #0f0d0b;
+  --led: 255, 196, 100;
+  --ink: rgba(255,232,196,.62); --badge-ink: #4a3410;
+  --mat-a: #1d1a17; --mat-b: #141210;
+}
+[data-skin="teak"] #plinth { border: calc(var(--u) * .9) solid transparent; border-radius: calc(var(--u) * 1);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='700'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.0028 0.12' numOctaves='4' seed='4'/><feColorMatrix values='0 0 0 0 0.30  0 0 0 0 0.11  0 0 0 0 0.03  2.4 0 0 0 -0.88'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>") padding-box,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='700'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.002 0.7' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.08  0 0 0 0 0.02  1.6 0 0 0 -0.62'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>") padding-box,
+    linear-gradient(160deg, #b0602f 0%, #94491f 48%, #a8582b 100%) padding-box,
+    linear-gradient(160deg, #8a431c, #5e2a10) border-box;
+  background-size: cover, cover, auto, auto;
+  box-shadow: inset 0 calc(var(--u) * .2) 0 rgba(255,214,160,.35), inset 0 calc(var(--u) * -.3) 0 rgba(0,0,0,.35),
+    0 calc(var(--u) * 2.4) calc(var(--u) * 4) rgba(0,0,0,.7), 0 0 calc(var(--u) * 10) rgba(var(--amb), .12); }
+[data-skin="teak"] #deco { display: block; inset: calc(var(--u) * 1.3); border-radius: calc(var(--u) * .5);
+  box-shadow: inset 0 0 0 1px rgba(60,20,4,.55), 0 0 0 1px rgba(255,214,160,.14); }
+[data-skin="teak"] .screw { display: none; }
+[data-skin="teak"] #well { background: none; box-shadow: none; }
+/* cream felt ring with a brass edge, wider than the record */
+[data-skin="teak"] #rim { inset: calc(var(--u) * -2.2);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.38  0 0 0 0 0.28  .5 0 0 0 -.12'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>"),
+    radial-gradient(circle closest-side, #efe6d1 0 95.4%, #8f7232 95.6%, #f8e6ad 96.6%, #c49c4c 98%, #f3dc98 99%, #6e4f1c 100%);
+  box-shadow: 0 calc(var(--u) * .7) calc(var(--u) * 1.6) rgba(30,10,0,.6); }
+[data-skin="teak"] #strobe { display: none; }
+[data-skin="teak"] #mat { box-shadow: 0 0 calc(var(--u) * .6) rgba(0,0,0,.45); }
+[data-skin="teak"] #armbase { background: radial-gradient(circle, var(--a-mid) 0 18%, #1b1714 19% 26%, transparent 27%),
+  repeating-conic-gradient(#1f1b18 0 8deg, #2b2622 8deg 16deg); box-shadow: 0 0 0 calc(var(--u) * .3) var(--m-mid), 0 calc(var(--u) * .6) calc(var(--u) * 1.2) rgba(0,0,0,.6); }
+[data-skin="teak"] #armbase .ring { inset: 30%; box-shadow: 0 0 0 calc(var(--u) * .35) var(--m-lo), 0 0 0 calc(var(--u) * .6) var(--m-hi); }
+[data-skin="teak"] #vfd { box-shadow: inset 0 calc(var(--u) * .2) calc(var(--u) * .6) #000, 0 0 0 calc(var(--u) * .3) var(--m-mid), 0 1px 0 calc(var(--u) * .3) rgba(0,0,0,.4); }
+[data-skin="teak"] #ctl::before { background: rgba(40,14,2,.28); }
+
+
+/* =====================================================================
+   SMOKED ACRYLIC: clear smoked slab, blue-to-magenta LED edge, black parts
+   ===================================================================== */
+html[data-skin="acrylic"] {
+  --room: #06060b; --room-ink: #e6e8ff; --room-ink2: rgba(200,205,255,.55);
+  --m-hi: #80808e; --m-mid: #2c2c35; --m-lo: #0b0b10; --k-ink: #a8b8ff;
+  --a-hi: #6f6f7c; --a-mid: #24242c; --a-lo: #08080b;
+  --t-hi: #6a6a78; --t-mid: #1d1d23; --t-lo: #000;
+  --h-hi: #34343c; --h-lo: #0a0a0d;
+  --led: 150, 160, 255; --led-off: #1a1a2c;
+  --ink: rgba(190,198,255,.58); --slot: rgba(0,0,0,.7); --badge-ink: #d4daff;
+  --mat-a: #121218; --mat-b: #07070a; --strobe: rgba(170,175,255,.55);
+}
+[data-skin="acrylic"] #plinth { border: calc(var(--u) * .55) solid transparent; border-radius: calc(var(--u) * 2);
+  background:
+    linear-gradient(115deg, rgba(255,255,255,.07), transparent 30%, rgba(255,255,255,.03) 62%, transparent 80%) padding-box,
+    linear-gradient(135deg, rgba(90,120,255,.20), transparent 30%, transparent 70%, rgba(210,80,255,.20)) padding-box,
+    linear-gradient(180deg, rgba(20,19,34,.93), rgba(12,11,22,.95)) padding-box,
+    linear-gradient(90deg, #4f7bff, #8c5cff 50%, #e04dff) border-box;
+  background-size: auto;
+  box-shadow: 0 0 calc(var(--u) * 3.5) rgba(120,95,255,.5), inset 0 0 calc(var(--u) * 2.5) rgba(140,120,255,.28),
+    inset 0 0 0 calc(var(--u) * .25) rgba(255,255,255,.08), 0 calc(var(--u) * 3) calc(var(--u) * 5) rgba(0,0,0,.85); }
+[data-skin="acrylic"] #plinth::before { background: none; }
+/* second acrylic layer seen through the top slab */
+[data-skin="acrylic"] #deco { display: block; inset: calc(var(--u) * 2.4); border-radius: calc(var(--u) * 1.4);
+  border: 1px solid rgba(160,170,255,.22); box-shadow: inset 0 0 calc(var(--u) * 2) rgba(120,100,255,.12), 0 0 calc(var(--u) * 1) rgba(120,100,255,.15);
+  animation: glowdrift 9s ease-in-out infinite alternate; }
+@keyframes glowdrift { to { filter: hue-rotate(35deg); } }
+/* corner standoffs */
+[data-skin="acrylic"] #led { left: calc(var(--u) * 6.2); }
+[data-skin="acrylic"] .screw { width: calc(var(--u) * 2); height: calc(var(--u) * 2);
+  background: radial-gradient(circle at 38% 32%, #6b6b76, #16161c 55%, #000);
+  box-shadow: 0 0 0 calc(var(--u) * .28) rgba(150,165,255,.45), 0 0 calc(var(--u) * 1.4) rgba(140,120,255,.65); }
+[data-skin="acrylic"] .screw::after { display: none; }
+[data-skin="acrylic"] #well { background: radial-gradient(circle, rgba(8,8,14,.6) 60%, rgba(30,26,60,.5));
+  box-shadow: 0 0 calc(var(--u) * 3) calc(var(--u) * .3) rgba(120,100,255,.5), inset 0 0 calc(var(--u) * 2) rgba(150,120,255,.45), inset 0 0 0 1px rgba(170,150,255,.45); }
+[data-skin="acrylic"] #rim { background: radial-gradient(circle closest-side, #0e0e16 0 93%, rgba(170,150,255,.95) 94.5%, rgba(90,120,255,.55) 97%, #14142a 100%);
+  box-shadow: 0 0 calc(var(--u) * 2.2) rgba(140,110,255,.65), 0 calc(var(--u) * 1) calc(var(--u) * 2) rgba(0,0,0,.7); }
+[data-skin="acrylic"] #strobe { opacity: .55; }
+[data-skin="acrylic"] #powerknob { box-shadow: 0 0 0 calc(var(--u) * .35) rgba(110,140,255,.85), 0 0 calc(var(--u) * 2) rgba(110,140,255,.65), 0 calc(var(--u) * .5) calc(var(--u) * .9) rgba(0,0,0,.6); }
+[data-skin="acrylic"] #powerknob::before { display: none; }
+[data-skin="acrylic"] #badge { background: rgba(255,255,255,.04); box-shadow: inset 0 0 0 1px rgba(160,170,255,.38), 0 0 calc(var(--u) * 1.6) rgba(120,110,255,.3);
+  text-shadow: 0 0 calc(var(--u) * .8) rgba(140,150,255,.8); }
+[data-skin="acrylic"] .foot { background: linear-gradient(90deg, #0a0a0f, #34343e 40%, #0a0a0f); box-shadow: 0 calc(var(--u) * .4) calc(var(--u) * 1.8) rgba(180,90,255,.75); }
+[data-skin="acrylic"] .hinge { box-shadow: 0 0 calc(var(--u) * .8) rgba(140,120,255,.5); }
+[data-skin="acrylic"] #vfd { background: rgba(4,4,10,.85); box-shadow: inset 0 0 0 1px rgba(150,160,255,.3), 0 0 calc(var(--u) * 1.2) rgba(120,100,255,.25); }
+[data-skin="acrylic"] #ctl::before { background: rgba(0,0,0,.35); box-shadow: inset 0 0 0 1px rgba(150,160,255,.22); }
+[data-skin="acrylic"] .arm-s { display: none; } [data-skin="acrylic"] .arm-x { display: inline; }
+
+
+/* =====================================================================
+   ART DECO: black lacquer, gold sunburst, chrome frame, ivory knobs
+   ===================================================================== */
+html[data-skin="deco"] {
+  --room: #0a0806;
+  --m-hi: #ffffff; --m-mid: #a6abb1; --m-lo: #474b51;
+  --k-hi: #fffaf0; --k-mid: #e6d9bd; --k-lo: #a39274; --k-ink: #3a2e1c;
+  --t-hi: #ffffff; --t-mid: #dde1e6; --t-lo: #474b51;
+  --h-hi: #e4e7ea; --h-lo: #5b6067;
+  --led: 255, 208, 125; --led-off: #2a1d08;
+  --ink: rgba(228,192,118,.8); --badge-ink: #1c1408; --slot: #050404;
+  --well-a: #050404; --well-b: #0d0a07; --mat-a: #1a1612; --mat-b: #0b0a08;
+  --gold-hi: #f7e1a0; --gold: #c9a14a; --gold-lo: #7c5a1c;
+}
+[data-skin="deco"] #plinth { border: calc(var(--u) * 1.3) solid transparent; border-radius: calc(var(--u) * 2.4);
+  background:
+    linear-gradient(115deg, rgba(255,240,210,.07), transparent 35%, rgba(255,240,210,.035) 70%, transparent) padding-box,
+    linear-gradient(160deg, #17120d, #060504 50%, #120e0a) padding-box,
+    repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 2px, transparent 2px 5px) border-box,
+    linear-gradient(135deg, #ffffff, #8b9096 22%, #f4f4f4 45%, #585d64 70%, #e9e9e9) border-box;
+  background-size: auto;
+  box-shadow: inset 0 0 0 calc(var(--u) * .3) #000, inset 0 0 calc(var(--u) * 3) rgba(0,0,0,.8),
+    0 calc(var(--u) * 2.4) calc(var(--u) * 4) rgba(0,0,0,.75), 0 0 calc(var(--u) * 10) rgba(201,161,74,.12); }
+[data-skin="deco"] #plinth::before { background: none; }
+/* gold sunburst around the platter */
+[data-skin="deco"] #deco { display: block;
+  background: repeating-conic-gradient(from 3deg at calc(var(--u) * 46) calc(var(--u) * 37.5),
+    rgba(214,174,88,.7) 0 1.3deg, transparent 1.3deg 6.5deg, rgba(214,174,88,.3) 6.5deg 7deg, transparent 7deg 12deg);
+  -webkit-mask: radial-gradient(circle at calc(var(--u) * 46) calc(var(--u) * 37.5), transparent 0 calc(var(--u) * 34.4), #000 calc(var(--u) * 34.6), rgba(0,0,0,.55) calc(var(--u) * 40), transparent calc(var(--u) * 50));
+  mask: radial-gradient(circle at calc(var(--u) * 46) calc(var(--u) * 37.5), transparent 0 calc(var(--u) * 34.4), #000 calc(var(--u) * 34.6), rgba(0,0,0,.55) calc(var(--u) * 40), transparent calc(var(--u) * 50)); }
+/* stepped gold pinstripe frame */
+[data-skin="deco"] #deco::before { content: ""; position: absolute; inset: 0;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 800' preserveAspectRatio='none'><g fill='none' stroke='%23d0a650'><path vector-effect='non-scaling-stroke' stroke-width='1.6' d='M60 14H940V36H986V764H940V786H60V764H14V36H60Z'/><path vector-effect='non-scaling-stroke' stroke-width='1' stroke-opacity='.55' d='M72 26H928V48H974V752H928V774H72V752H26V48H72Z'/></g></svg>") center / 100% 100% no-repeat; }
+/* gold fan at the front */
+[data-skin="deco"] #deco i { display: block; left: calc(var(--u) * 39); bottom: 0; width: calc(var(--u) * 14); height: calc(var(--u) * 7);
+  background: repeating-conic-gradient(from -90deg at 50% 100%, rgba(214,174,88,.9) 0 3deg, transparent 3deg 11.25deg);
+  -webkit-mask: radial-gradient(circle at 50% 100%, transparent 0 calc(var(--u) * 2.2), #000 calc(var(--u) * 2.4) calc(var(--u) * 6.8), transparent calc(var(--u) * 7));
+  mask: radial-gradient(circle at 50% 100%, transparent 0 calc(var(--u) * 2.2), #000 calc(var(--u) * 2.4) calc(var(--u) * 6.8), transparent calc(var(--u) * 7)); }
+[data-skin="deco"] #silkDrive { display: none; }
+[data-skin="deco"] #badge b { letter-spacing: .16em; text-indent: .16em; }
+[data-skin="deco"] #antiskate { white-space: nowrap; font-size: calc(var(--u) * .58); letter-spacing: .08em; margin-left: calc(var(--u) * -.6); width: calc(var(--u) * 5.8); }
+[data-skin="deco"] #antiskate .dial { margin-left: calc(var(--u) * .6); }
+[data-skin="deco"] .screw { display: none; }
+[data-skin="deco"] #well { box-shadow: inset 0 calc(var(--u) * .6) calc(var(--u) * 1.4) #000, 0 0 0 calc(var(--u) * .3) var(--gold), 0 0 0 calc(var(--u) * .55) #050404, 0 0 0 calc(var(--u) * .7) rgba(201,161,74,.5); }
+[data-skin="deco"] #rim { box-shadow: 0 0 0 calc(var(--u) * .3) var(--gold-lo), 0 calc(var(--u) * .9) calc(var(--u) * 1.8) rgba(0,0,0,.65); }
+[data-skin="deco"] #strobe { display: none; }
+[data-skin="deco"] #mat { box-shadow: inset 0 0 calc(var(--u) * 1.5) #000, 0 0 0 calc(var(--u) * .25) var(--gold); }
+[data-skin="deco"] #powerknob, [data-skin="deco"] .pbtn:not(.wide) {
+  background: repeating-conic-gradient(rgba(0,0,0,.07) 0 6deg, transparent 6deg 12deg), radial-gradient(circle at 38% 30%, var(--k-hi), var(--k-mid) 58%, var(--k-lo));
+  box-shadow: 0 0 0 calc(var(--u) * .4) #d9dde2, 0 0 0 calc(var(--u) * .65) #4b4f55, 0 calc(var(--u) * .6) calc(var(--u) * 1) rgba(0,0,0,.65); }
+[data-skin="deco"] #powerknob::before { background: radial-gradient(circle, transparent 60%, rgba(201,161,74,.55) 62%, transparent 64%, transparent 72%, rgba(201,161,74,.35) 74%, transparent 76%); }
+[data-skin="deco"] .pbtn.wide { background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-lo)); box-shadow: 0 0 0 calc(var(--u) * .25) #1c1408, 0 calc(var(--u) * .4) calc(var(--u) * .8) rgba(0,0,0,.7); }
+[data-skin="deco"] .pbtn.wide span { color: #1c1408; }
+[data-skin="deco"] #badge { background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, #f0d58a); clip-path: polygon(8% 0, 92% 0, 100% 22%, 100% 100%, 0 100%, 0 22%);
+  font-family: Georgia, "Times New Roman", serif; }
+[data-skin="deco"] #pitch .fader { background: linear-gradient(180deg, #ffffff, #a6abb1 55%, #474b51); }
+[data-skin="deco"] #pitch .lab, [data-skin="deco"] #antiskate, [data-skin="deco"] .silk { font-family: Georgia, "Times New Roman", serif; }
+[data-skin="deco"] #vfd { box-shadow: inset 0 calc(var(--u) * .2) calc(var(--u) * .6) #000, 0 0 0 calc(var(--u) * .25) var(--gold), 0 0 0 calc(var(--u) * .45) #000; }
+[data-skin="deco"] .foot { background: repeating-linear-gradient(180deg, #f2f2f2 0 calc(var(--u) * .35), #50545a calc(var(--u) * .35) calc(var(--u) * .55)); border-radius: 0; }
+[data-skin="deco"] #ctl::before { background: rgba(0,0,0,.5); box-shadow: inset 0 0 0 1px rgba(201,161,74,.45); }
+[data-skin="deco"] #armbase { box-shadow: 0 0 0 calc(var(--u) * .3) var(--gold), 0 calc(var(--u) * .6) calc(var(--u) * 1.2) rgba(0,0,0,.7); }
+
+
+/* =====================================================================
+   CREAM '72: German 70s minimalism. Cream body, black arm, one orange key
+   ===================================================================== */
+html[data-skin="cream"] {
+  --room: #3a3a3a; --room-ink: #f2efe8; --room-ink2: rgba(242,239,232,.55);
+  --m-hi: #f6f3ec; --m-mid: #d2cdc2; --m-lo: #a29d91;
+  --k-hi: #f9f7f2; --k-mid: #e2ddd3; --k-lo: #bdb7aa; --k-ink: #4a463e;
+  --a-hi: #5c5c5c; --a-mid: #262626; --a-lo: #0b0b0b;
+  --t-hi: #6a6a6a; --t-mid: #1e1e1e; --t-lo: #000;
+  --h-hi: #2c2c2c; --h-lo: #0c0c0c;
+  --led: 255, 108, 36; --led-off: #cfc6b8;
+  --ink: rgba(60,55,48,.6); --slot: #2a2824; --badge-ink: #3c3830;
+  --mat-a: #1d1d1d; --mat-b: #121212;
+}
+[data-skin="cream"] #plinth { border: calc(var(--u) * .5) solid transparent; border-radius: calc(var(--u) * 1.3);
+  background: linear-gradient(180deg, #ece8df, #e1dcd1) padding-box, linear-gradient(180deg, #f8f6f0, #bfb9ac) border-box;
+  background-size: auto;
+  box-shadow: inset 0 calc(var(--u) * .2) 0 rgba(255,255,255,.75), inset 0 calc(var(--u) * -.3) 0 rgba(0,0,0,.07), 0 calc(var(--u) * 2.4) calc(var(--u) * 4) rgba(0,0,0,.5), 0 calc(var(--u) * .6) calc(var(--u) * 1.2) rgba(0,0,0,.3); }
+[data-skin="cream"] #plinth::before { background: linear-gradient(115deg, rgba(255,255,255,.35), transparent 40%); }
+/* separate arm panel on the right */
+[data-skin="cream"] #deco { display: block; left: auto; width: calc(var(--u) * 19.4); border-radius: 0 calc(var(--u) * .8) calc(var(--u) * .8) 0;
+  background: linear-gradient(180deg, #e8e4da, #ddd8cc); box-shadow: inset 1px 0 0 rgba(0,0,0,.16), inset 2px 0 0 rgba(255,255,255,.7); }
+[data-skin="cream"] .screw { display: none; }
+[data-skin="cream"] #well { background: radial-gradient(circle, #d9d4c9 60%, #cfc9bc); box-shadow: inset 0 calc(var(--u) * .5) calc(var(--u) * 1.2) rgba(0,0,0,.28), 0 1px 0 rgba(255,255,255,.7); }
+[data-skin="cream"] #rim { background: radial-gradient(circle closest-side, #252525 0 95.6%, #bdb8ad 96.2%, #eeeae2 98.4%, #9d988c 100%); box-shadow: 0 calc(var(--u) * .5) calc(var(--u) * 1.2) rgba(0,0,0,.35); }
+[data-skin="cream"] #strobe { display: none; }
+[data-skin="cream"] #powerknob { background: radial-gradient(circle, #1b1b1b 0 34%, #f5f2ec 36%, #e6e1d7 72%, #d2ccbf); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 calc(var(--u) * .2) calc(var(--u) * .5) rgba(0,0,0,.15); transition: background .6s; }
+[data-skin="cream"] .playing #powerknob { background: radial-gradient(circle, #ff6c24 0 34%, #f5f2ec 36%, #e6e1d7 72%, #d2ccbf); }
+[data-skin="cream"] #powerknob i, [data-skin="cream"] #powerknob::before { display: none; }
+[data-skin="cream"] .pbtn { background: radial-gradient(circle at 50% 35%, #fbf9f5, #e4dfd5 70%, #cfc9bc); box-shadow: 0 calc(var(--u) * .2) calc(var(--u) * .4) rgba(0,0,0,.22), inset 0 0 0 1px rgba(0,0,0,.08); }
+[data-skin="cream"] #ctl { right: calc(var(--u) * 2.6); gap: calc(var(--u) * 1); }
+[data-skin="cream"] #ctl::before { inset: calc(var(--u) * -1.2) calc(var(--u) * -1.2); }
+[data-skin="cream"] .pbtn { width: calc(var(--u) * 3.8); height: calc(var(--u) * 3.8); }
+[data-skin="cream"] .pbtn.wide { width: calc(var(--u) * 4.8); height: calc(var(--u) * 4.8); border-radius: 50%;
+  background: radial-gradient(circle at 45% 32%, #ff8a4a, #ef5f1c 60%, #c4460c); box-shadow: 0 calc(var(--u) * .25) calc(var(--u) * .5) rgba(120,40,0,.4), inset 0 0 0 1px rgba(0,0,0,.08); }
+[data-skin="cream"] .pbtn.wide span { font-size: 0; }
+[data-skin="cream"] .pbtn.wide span::before { content: "▶ ■"; font-size: calc(var(--u) * .95); letter-spacing: .1em; color: #fff; }
+[data-skin="cream"] #silkSpeed { right: calc(var(--u) * 9.8); }
+[data-skin="cream"] .pbtn::after { width: calc(var(--u) * .45); height: calc(var(--u) * .45); margin-left: calc(var(--u) * -.22); }
+[data-skin="cream"] #badge { background: none; box-shadow: none; }
+[data-skin="cream"] #badge b { letter-spacing: .02em; text-indent: 0; font-weight: 800; font-size: calc(var(--u) * 2.4); }
+[data-skin="cream"] #badge span { letter-spacing: .3em; }
+[data-skin="cream"] #vfd { background: linear-gradient(180deg, #1a1a1a, #222); box-shadow: inset 0 calc(var(--u) * .2) calc(var(--u) * .5) #000, 0 0 0 calc(var(--u) * .25) #cfc9bc; }
+[data-skin="cream"] .silk, [data-skin="cream"] #pitch .lab, [data-skin="cream"] #antiskate { text-shadow: none; }
+[data-skin="cream"] .hinge { background: linear-gradient(180deg, #d9d4c9, #a8a296); }
+[data-skin="cream"] .foot { background: linear-gradient(90deg, #8f8a80, #d8d3c8 40%, #8f8a80); }
+[data-skin="cream"] #ctl::before { background: rgba(0,0,0,.035); box-shadow: inset 0 1px 2px rgba(0,0,0,.14), 0 1px 0 rgba(255,255,255,.7); }
+[data-skin="cream"] #armbase { background: radial-gradient(circle, #1a1a1a 0 22%, #2c2c2c 23% 30%, #f3f0e9 31% 70%, #d7d1c5 100%); box-shadow: 0 calc(var(--u) * .3) calc(var(--u) * .7) rgba(0,0,0,.25); }
+[data-skin="cream"] #armbase .ring { box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+[data-skin="cream"] #armrest { background: linear-gradient(90deg, #111, #444 45%, #111); }
+[data-skin="cream"] #antiskate .dial { box-shadow: 0 calc(var(--u) * .2) calc(var(--u) * .4) rgba(0,0,0,.2), 0 0 0 calc(var(--u) * .3) rgba(0,0,0,.06); }
+[data-skin="cream"] #lid { box-shadow: inset 0 0 0 calc(var(--u) * .12) rgba(255,255,255,.4); }
+[data-skin="cream"] .arm-s { display: none; } [data-skin="cream"] .arm-x { display: inline; }
+
+
+/* =====================================================================
+   DJ DECK: matte black club deck, dotted strobe, red light, red pitch
+   ===================================================================== */
+html[data-skin="dj"] {
+  --room: #070505;
+  --m-hi: #f2f3f4; --m-mid: #9da1a5; --m-lo: #4b4f53;
+  --k-hi: #4a4a4c; --k-mid: #262628; --k-lo: #0e0e0f; --k-ink: #e8e8e8;
+  --led: 255, 44, 44; --led-off: #2a0c0c;
+  --ink: rgba(225,225,225,.5); --slot: #030303; --badge-ink: #e2e2e2;
+  --well-a: #0a0a0a; --well-b: #121212; --mat-a: #1a1a1a; --mat-b: #0c0c0c; --strobe: #e8e8e8;
+}
+[data-skin="dj"] #plinth { border: calc(var(--u) * .6) solid transparent; border-radius: calc(var(--u) * 1);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .16 0 0 0 -.03'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>") padding-box,
+    linear-gradient(160deg, #27282b, #1a1b1d 50%, #212225) padding-box,
+    linear-gradient(180deg, #45464a, #0e0e0f) border-box;
+  background-size: 300px 300px, auto, auto;
+  box-shadow: inset 0 calc(var(--u) * .18) 0 rgba(255,255,255,.08), 0 calc(var(--u) * 2.4) calc(var(--u) * 4) rgba(0,0,0,.85), 0 0 calc(var(--u) * 10) rgba(255,30,30,.07); }
+[data-skin="dj"] #plinth::before { background: linear-gradient(115deg, rgba(255,255,255,.05), transparent 35%); }
+/* four rows of strobe dots on the brushed platter edge */
+[data-skin="dj"] #rim { background: radial-gradient(circle closest-side, transparent 92.5%, rgba(0,0,0,.35) 92.6% 92.9%, transparent 93%),
+  repeating-conic-gradient(rgba(255,255,255,.05) 0 .5deg, rgba(0,0,0,.05) .5deg 1deg),
+  conic-gradient(from 20deg, var(--m-lo), var(--m-hi), var(--m-mid), var(--m-hi), var(--m-lo), var(--m-hi), var(--m-mid), var(--m-hi), var(--m-lo)); }
+[data-skin="dj"] #strobe { opacity: 1; background: repeating-conic-gradient(#2a2a2a 0 1deg, transparent 1deg 2.5deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 92.9%, #000 93.2% 94%, transparent 94.3% 94.8%, #000 95.1% 95.9%, transparent 96.2% 96.7%, #000 97% 97.8%, transparent 98.1%);
+  mask: radial-gradient(circle closest-side, transparent 92.9%, #000 93.2% 94%, transparent 94.3% 94.8%, #000 95.1% 95.9%, transparent 96.2% 96.7%, #000 97% 97.8%, transparent 98.1%); }
+/* red strobe illuminator glow on the platter edge */
+[data-skin="dj"] #rim::after { content: ""; position: absolute; inset: calc(var(--u) * -1); border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 8% 72%, rgba(255,40,40,.6), transparent 30%), radial-gradient(circle at 92% 68%, rgba(255,40,40,.35), transparent 22%);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 88%, #000 92%); mask: radial-gradient(circle closest-side, transparent 88%, #000 92%); }
+[data-skin="dj"] #well { box-shadow: inset 0 calc(var(--u) * .6) calc(var(--u) * 1.4) #000, 0 1px 0 rgba(255,255,255,.08); }
+[data-skin="dj"] .screw { width: calc(var(--u) * .9); height: calc(var(--u) * .9); background: radial-gradient(circle at 40% 35%, #555, #1a1a1a 70%); }
+[data-skin="dj"] .screw::after { display: none; }
+[data-skin="dj"] .hinge { background: linear-gradient(180deg, #4a4a4c, #1b1b1c); }
+[data-skin="dj"] #powerknob { background: conic-gradient(from 10deg, #6f7276, #f1f2f3, #8a8d91, #e2e3e4, #6f7276);
+  box-shadow: 0 0 0 calc(var(--u) * .4) #0b0b0b, 0 0 0 calc(var(--u) * .65) rgba(255,40,40,.9), 0 0 calc(var(--u) * 2.2) rgba(255,30,30,.6), 0 calc(var(--u) * .5) calc(var(--u) * .9) rgba(0,0,0,.6); }
+[data-skin="dj"] #powerknob::before { display: none; }
+[data-skin="dj"] #powerknob i { background: #111; }
+[data-skin="dj"] #pitch .fader { background: linear-gradient(180deg, #ff6a6a, #d01c1c 55%, #6e0b0b); box-shadow: 0 0 calc(var(--u) * 1.2) rgba(255,40,40,.55), 0 calc(var(--u) * .35) calc(var(--u) * .6) rgba(0,0,0,.7); }
+[data-skin="dj"] #pitch .fader::after { background: #fff; opacity: .8; }
+[data-skin="dj"] #pitch .slot { box-shadow: inset 0 1px 3px #000, 0 0 0 calc(var(--u) * .5) #0d0d0e, 0 0 0 calc(var(--u) * .6) rgba(255,255,255,.08); }
+[data-skin="dj"] .pbtn { box-shadow: 0 0 0 calc(var(--u) * .2) #5a5d61, 0 calc(var(--u) * .4) calc(var(--u) * .7) rgba(0,0,0,.7); }
+[data-skin="dj"] .pbtn.wide { border-radius: calc(var(--u) * .5); }
+[data-skin="dj"] #badge { background: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+[data-skin="dj"] #vfd { box-shadow: inset 0 calc(var(--u) * .2) calc(var(--u) * .6) #000, 0 0 0 calc(var(--u) * .25) #3a3b3e; }
+[data-skin="dj"] #ctl::before { background: rgba(0,0,0,.4); box-shadow: inset 0 1px 3px rgba(0,0,0,.7), 0 1px 0 rgba(255,255,255,.06); }
+[data-skin="dj"] #armbase { background: radial-gradient(circle, #111 0 24%, transparent 25%), repeating-conic-gradient(#1c1c1d 0 6deg, #2a2a2c 6deg 12deg);
+  box-shadow: 0 0 0 calc(var(--u) * .3) #4b4f53, 0 calc(var(--u) * .6) calc(var(--u) * 1.2) rgba(0,0,0,.7); }
+[data-skin="dj"] #armbase .ring { box-shadow: 0 0 0 calc(var(--u) * .3) #6b6f73, inset 0 0 0 calc(var(--u) * .3) rgba(0,0,0,.6); }
+[data-skin="dj"] #antiskate .dial { background: repeating-conic-gradient(#3a3a3c 0 4deg, #18181a 4deg 8deg); }
+[data-skin="dj"] .foot { background: linear-gradient(90deg, #111, #3a3a3c 40%, #111); }
+/* pop-up target light that lights the grooves red */
+[data-skin="dj"] #target { display: block; position: absolute; left: calc(var(--u) * 15.6); top: calc(var(--u) * 64.5); width: calc(var(--u) * 2.6); height: calc(var(--u) * 2.6); border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #f3f3f3, #8a8d91 55%, #3b3e42); box-shadow: 0 calc(var(--u) * .3) calc(var(--u) * .6) rgba(0,0,0,.7); }
+[data-skin="dj"] #target i { position: absolute; inset: 28%; border-radius: 50%; background: #3a0606; transition: all .6s; }
+[data-skin="dj"] .playing #target i { background: #ff3030; box-shadow: 0 0 calc(var(--u) * 1) #ff2020, 0 0 calc(var(--u) * 3.5) calc(var(--u) * 1) rgba(255,30,30,.45); }
+
+
+/* =====================================================================
+   MARBLE: Carrara slab, brass arm and knobs, daylight room
+   ===================================================================== */
+html[data-skin="marble"] {
+  --room: #e6e2db; --room-ink: #2b2620; --room-ink2: rgba(43,38,32,.55);
+  --m-hi: #fcefc4; --m-mid: #d0b26a; --m-lo: #8c6f30; --k-ink: #5a4516;
+  --t-hi: #fff8dc; --t-mid: #d9bd76; --t-lo: #8c6f30;
+  --h-hi: #ead39a; --h-lo: #8c6f30;
+  --led: 255, 196, 110; --led-off: #b8ad9a;
+  --ink: rgba(74,64,50,.62); --slot: #3a352e; --badge-ink: #4a3a14;
+  --well-a: #d6d1c8; --well-b: #e2ded6; --mat-a: #1d1b19; --mat-b: #121110;
+}
+[data-skin="marble"] #plinth { border: calc(var(--u) * .8) solid transparent; border-radius: calc(var(--u) * 1);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='800'><filter id='v' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.0032 0.0055' numOctaves='6' seed='11'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.41  0 0 0 0 0.40  1 0 0 0 0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .25 .7 .25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0'/></feComponentTransfer><feGaussianBlur stdDeviation='.6'/></filter><rect width='100%25' height='100%25' filter='url(%23v)'/></svg>") padding-box,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='800'><filter id='v' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.004' numOctaves='5' seed='27'/><feColorMatrix values='0 0 0 0 0.72  0 0 0 0 0.60  0 0 0 0 0.38  1 0 0 0 0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .35 .6 .2 0 0 0 0 0 0 0 0 0 0 0'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23v)'/></svg>") padding-box,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='800'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='4' seed='5'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.49  0 0 0 0 0.48  .18 0 0 0 -.06'/></filter><rect width='100%25' height='100%25' filter='url(%23c)'/></svg>") padding-box,
+    linear-gradient(150deg, #f8f7f4, #ecebe6 55%, #f3f1ec) padding-box,
+    linear-gradient(180deg, #e9e6e0, #bdb7ad) border-box;
+  background-size: cover, cover, cover, auto, auto;
+  box-shadow: inset 0 calc(var(--u) * .2) 0 rgba(255,255,255,.95), inset 0 calc(var(--u) * -.3) 0 rgba(0,0,0,.06),
+    0 calc(var(--u) * 2.4) calc(var(--u) * 4) rgba(70,58,44,.35), 0 calc(var(--u) * .6) calc(var(--u) * 1.4) rgba(70,58,44,.25); }
+[data-skin="marble"] #plinth::before { background: linear-gradient(115deg, rgba(255,255,255,.4), transparent 40%); }
+[data-skin="marble"] .screw { display: none; }
+[data-skin="marble"] #badge b { letter-spacing: .2em; text-indent: .2em; }
+[data-skin="marble"] #well { box-shadow: inset 0 calc(var(--u) * .5) calc(var(--u) * 1.3) rgba(60,50,40,.35), 0 1px 0 rgba(255,255,255,.9); }
+[data-skin="marble"] #rim { inset: calc(var(--u) * -1.2);
+  background: radial-gradient(circle closest-side, #1a1816 0 94%, transparent 94.3%),
+    conic-gradient(from 20deg, var(--m-lo), var(--m-hi), var(--m-mid), var(--m-hi), var(--m-lo), var(--m-hi), var(--m-mid), var(--m-hi), var(--m-lo));
+  box-shadow: 0 calc(var(--u) * .8) calc(var(--u) * 1.6) rgba(60,45,20,.45); }
+[data-skin="marble"] #strobe { display: none; }
+[data-skin="marble"] #vfd { background: linear-gradient(180deg, #1c1a17, #24211d); box-shadow: inset 0 calc(var(--u) * .2) calc(var(--u) * .5) #000, 0 0 0 calc(var(--u) * .3) var(--m-mid); }
+[data-skin="marble"] .silk, [data-skin="marble"] #pitch .lab, [data-skin="marble"] #antiskate { text-shadow: none; }
+[data-skin="marble"] #ctl::before { background: rgba(80,66,40,.06); box-shadow: inset 0 1px 2px rgba(60,50,40,.18), 0 1px 0 rgba(255,255,255,.8); }
+[data-skin="marble"] #powerknob::before { background: radial-gradient(circle, transparent 62%, rgba(80,60,20,.25) 64%, rgba(80,60,20,.08) 80%, transparent 82%); }
+[data-skin="marble"] #armbase .ring { box-shadow: inset 0 0 0 calc(var(--u) * .25) rgba(90,70,20,.35), 0 0 0 calc(var(--u) * .2) rgba(255,255,255,.5); }
+[data-skin="marble"] #lid { box-shadow: inset 0 0 0 calc(var(--u) * .12) rgba(255,255,255,.6); }
+[data-skin="marble"] #nowplaying { text-shadow: 0 1px 0 rgba(255,255,255,.5); }
+[data-skin="marble"] .arm-s { display: none; } [data-skin="marble"] .arm-x { display: inline; }
+[data-skin="deco"] #ctl { gap: calc(var(--u) * 2); }

@@ -415,6 +415,7 @@ let hideTimer;
 function showControls() { $('controls').classList.remove('hidden'); document.body.classList.add('ctl'); hideControlsSoon(); }
 function hideControlsSoon(now) { clearTimeout(hideTimer); hideTimer = setTimeout(() => { $('controls').classList.add('hidden'); document.body.classList.remove('ctl'); }, now ? 0 : 6000); }
 $('stage').addEventListener('click', e => {
+  if (!$('skinSheet').classList.contains('hidden')) return closeSkins();
   if (e.target.closest('#ctl, #pitch, #tonearm, #vfd') || S.dragging) return;
   if (e.target.closest('#platter')) { if (!S.track && !store.get('last')) openSheet(); else togglePlay(); showControls(); }
   else if ($('controls').classList.contains('hidden')) showControls(); else hideControlsSoon(true);
@@ -460,6 +461,44 @@ if (IS_IOS) $('vol').style.display = 'none'; // iOS ignores web volume; use the 
 $('vol').value = store.get('vol') ?? 70;
 $('vol').oninput = e => { store.set('vol', +e.target.value); S.player && S.player.setVolume(e.target.value / 100); };
 
+/* ---------- turntable skins: same player, different cabinet (looks live in skins.css) ---------- */
+const SKINS = [
+  { id: 'walnut', name: 'Walnut', badge: ['VINYL', 'DECO · HI-FI'], drive: 'DIRECT DRIVE · QUARTZ LOCK', room: '#0d0b09' },
+  { id: 'teak', name: 'Teak', badge: ['TEAK', 'NORDIC · 62'], drive: 'BELT DRIVE · HAND OILED TEAK', room: '#100a07' },
+  { id: 'acrylic', name: 'Smoked Acrylic', badge: ['PRISM', 'CLEAR AUDIO'], drive: 'ISOLATED PLATTER · LED EDGE', room: '#06060b' },
+  { id: 'deco', name: 'Art Deco', badge: ['ODEON', 'EST · 1932'], drive: '', room: '#0a0806' },
+  { id: 'cream', name: "Cream '72", badge: ['vinyl', 'PS 72'], drive: 'BELT DRIVE', room: '#3a3a3a' },
+  { id: 'dj', name: 'DJ Deck', badge: ['VINYL', 'DJ · MK II'], drive: 'DIRECT DRIVE · HIGH TORQUE', room: '#070505' },
+  { id: 'marble', name: 'Marble', badge: ['MARMO', 'STONE · BRASS'], drive: 'BELT DRIVE · CARRARA MARBLE', room: '#e8e4dd' },
+];
+function applySkin(id) {
+  const k = SKINS.find(x => x.id === id) || SKINS[0];
+  document.documentElement.dataset.skin = k.id;
+  $('badge').querySelector('b').textContent = k.badge[0]; $('badge').querySelector('span').textContent = k.badge[1];
+  $('silkDrive').textContent = k.drive;
+  document.querySelector('meta[name=theme-color]').content = k.room;
+  document.querySelectorAll('#skinList .skin').forEach(c => c.classList.toggle('on', c.dataset.id === k.id));
+  return k;
+}
+SKINS.forEach(k => {
+  const c = document.createElement('button'); c.className = 'skin'; c.dataset.id = k.id;
+  c.innerHTML = `<img src="skins/${k.id}.jpg" alt=""><span>${esc(k.name)}</span>`;
+  c.onclick = () => {
+    if (document.documentElement.dataset.skin === k.id) return;
+    $('stage').classList.add('swapskin'); store.set('skin', k.id);
+    setTimeout(() => { applySkin(k.id); $('stage').classList.remove('swapskin'); }, 300);
+  };
+  $('skinList').appendChild(c);
+});
+const openSkins = () => { $('sheet').classList.add('hidden'); $('skinSheet').classList.remove('hidden'); clearTimeout(hideTimer); };
+const closeSkins = () => { $('skinSheet').classList.add('hidden'); hideControlsSoon(); };
+$('bSkin').onclick = () => $('skinSheet').classList.contains('hidden') ? openSkins() : closeSkins();
+$('skinClose').onclick = closeSkins;
+$('skinSheet').addEventListener('pointerdown', () => clearTimeout(hideTimer));
+{ const q = new URLSearchParams(location.search);
+  applySkin(q.get('skin') || store.get('skin') || 'walnut');
+  if (q.has('clean')) document.body.classList.add('clean'); } // ?clean: turntable only (for the preview pictures)
+
 /* glass lid on/off */
 $('bLid').onclick = () => { document.body.classList.toggle('lidoff'); $('bLid').classList.toggle('on', !document.body.classList.contains('lidoff')); store.set('lid', !document.body.classList.contains('lidoff')); };
 if (store.get('lid') === false) document.body.classList.add('lidoff'); $('bLid').classList.toggle('on', !document.body.classList.contains('lidoff'));
@@ -503,7 +542,7 @@ async function init() {
   setTimeout(showControls, 600);
 }
 
-/* ---------- ?demo=1 : preview without Spotify (?demo=paused, ?demo=swap, ?demo=sheet) ---------- */
+/* ---------- ?demo=1 : preview without Spotify (?demo=paused, ?demo=swap, ?demo=sheet, ?demo=skins) ---------- */
 const DEMO_TRACKS = [['Golden Hour', 'Demo Artist', '#f6c37a', '#d9783c', '#3a2a3f', '#ffe3a8'],
   ['Blue Hours', 'Night Owls', '#7fb2ff', '#3d5fc4', '#101a3d', '#e6f1ff'],
   ['Green Room', 'The Fernes', '#b7e08a', '#4a9a5b', '#12301f', '#f3ffd9']].map(([name, artist, c1, c2, c3, sun]) => ({
@@ -522,5 +561,6 @@ function demo() {
   swapRecord(S.track, mode !== 'paused');
   if (mode === 'swap') setTimeout(() => demoSkip(1), 6500);
   if (mode === 'sheet') openSheet();
+  if (mode === 'skins') openSkins();
 }
 init();
