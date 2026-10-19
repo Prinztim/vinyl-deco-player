@@ -64,54 +64,100 @@ async function api(path, opts = {}) {
 }
 
 /* ---------- the turntable ---------- */
-const ARM = { L: 40, P: [87, 16.5], C: [46, 37.5], rest: -5 };
-function armAngleForRadius(r) { // find the arm angle (deg) whose needle lands on groove radius r (in plinth units)
+// geometry in plinth units (1u = 1% of the plinth width); the stylus sits at V in the arm's own frame (see the SVG)
+const ARM = { V: [3.2, 42], P: [87, 16.5], C: [46, 37.5], rest: -5 };
+const needleAt = deg => { // world position of the stylus for an arm rotated clockwise by deg
+  const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+  return [ARM.P[0] + ARM.V[0] * c - ARM.V[1] * s, ARM.P[1] + ARM.V[0] * s + ARM.V[1] * c];
+};
+function armAngleForRadius(r) { // arm angle (deg) whose stylus lands on groove radius r
   for (let a = 0; a < 90; a += 0.2) {
-    const rad = a * Math.PI / 180;
-    const x = ARM.P[0] - ARM.L * Math.sin(rad), y = ARM.P[1] + ARM.L * Math.cos(rad);
+    const [x, y] = needleAt(a);
     if (Math.hypot(x - ARM.C[0], y - ARM.C[1]) <= r) return a;
   }
   return 60;
 }
 const ARM_OUT = armAngleForRadius(27.5), ARM_IN = armAngleForRadius(12.5);
 const setArm = deg => $('tonearm').style.setProperty('--arm', deg + 'deg');
+{ // park the arm rest under the tube at its resting angle
+  const r = ARM.rest * Math.PI / 180, ly = 30, lx = 3.2, a = $('armrest');
+  a.style.left = (ARM.P[0] + lx * Math.cos(r) - ly * Math.sin(r)) + '%';
+  a.style.top = (ARM.P[1] + lx * Math.sin(r) + ly * Math.cos(r)) / 0.75 + '%'; // plinth is 75u tall
+}
 
-const spin = $('record').animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
-  { duration: CFG.spinSeconds * 1000, iterations: Infinity });
-spin.playbackRate = 0;
-let spinTarget = 0;
+const spinFx = { duration: CFG.spinSeconds * 1000, iterations: Infinity };
+const spin = $('record').animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], spinFx);
+const strobeSpin = $('strobe').animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], spinFx);
+spin.playbackRate = strobeSpin.playbackRate = 0;
+let spinTarget = 0, rpmFactor = 1;
 (function spinLoop() { // ease the record up to speed and back down, like a real motor
-  const r = spin.playbackRate, next = r + (spinTarget - r) * 0.035;
-  spin.playbackRate = Math.abs(next - spinTarget) < 0.004 ? spinTarget : next;
+  const r = spin.playbackRate, next = r + (spinTarget * rpmFactor - r) * 0.035;
+  spin.playbackRate = Math.abs(next - spinTarget * rpmFactor) < 0.004 ? spinTarget * rpmFactor : next;
+  strobeSpin.currentTime = spin.currentTime; strobeSpin.playbackRate = spin.playbackRate;
   requestAnimationFrame(spinLoop);
 })();
 
 /* ---------- playback state ---------- */
-const S = { track: null, paused: true, pos: 0, dur: 1, stamp: 0, deviceId: null, player: null, armLifted: false };
+const S = { track: null, paused: true, pos: 0, dur: 1, stamp: 0, deviceId: null, player: null, armLifted: false,
+  swapping: false, onPlatter: true, queued: null };
 const curPos = () => S.paused ? S.pos : Math.min(S.dur, S.pos + (Date.now() - S.stamp));
+const isPlaying = () => !S.paused && !!S.track && !S.swapping;
 
 function renderArm() {
   if (S.armLifted) return;
-  if (S.paused || !S.track) { setArm(ARM.rest); return; }
+  if (!isPlaying()) { setArm(ARM.rest); return; }
   const f = Math.max(0, Math.min(1, curPos() / S.dur));
   setArm(ARM_OUT + (ARM_IN - ARM_OUT) * f);
 }
 function renderPlaying() {
-  document.body.classList.toggle('playing', !S.paused && !!S.track);
-  spinTarget = (!S.paused && S.track) ? 1 : 0;
+  document.body.classList.toggle('playing', isPlaying());
+  spinTarget = isPlaying() ? 1 : 0;
   $('playIcon').setAttribute('d', S.paused ? 'M8 5v14l11-7z' : 'M7 5h4v14H7zm6 0h4v14h-4z');
   renderArm();
   if (!S.paused) requestWakeLock();
 }
-function showTrack(t) {
+function showTrack(t) { // title and artist text
   const np = $('nowplaying'); np.style.opacity = 0;
   setTimeout(() => {
     $('title').textContent = t ? t.name : 'Vinyl Deco Player';
     $('artist').textContent = t ? t.artist : 'Tap the record to begin';
     np.style.opacity = 1;
   }, 350);
-  const img = $('art');
-  if (t && t.art) { img.crossOrigin = 'anonymous'; img.onload = () => ambientFrom(img); img.src = t.art; }
+}
+
+/* ---------- changing records: lift the old one off, stash it, put the new one on ---------- */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const LIFT = 'drop-shadow(0 1.6vw 1.4vw rgba(0,0,0,.55))';
+function flight(frames, ms, easing) {
+  return $('disc').animate(frames, { duration: ms, easing, fill: 'forwards' }).finished.catch(() => {});
+}
+function loadArt(t) {
+  return new Promise(res => {
+    const img = $('art'); img.crossOrigin = 'anonymous';
+    if (!t || !t.art) { img.removeAttribute('src'); return res(); }
+    if (img.getAttribute('src') === t.art) { ambientFrom(img); return res(); }
+    img.onload = () => { ambientFrom(img); res(); }; img.onerror = () => res();
+    img.src = t.art; setTimeout(res, 1800);
+  });
+}
+async function swapRecord(track) {
+  if (S.swapping) { S.queued = track; return; }
+  S.swapping = true; renderPlaying(); // arm goes back to its rest, motor winds down
+  $('disc').getAnimations().forEach(a => a.cancel());
+  if (S.onPlatter) {
+    await sleep(1500);
+    await flight([{ transform: 'none', filter: 'none' },
+      { transform: 'scale(1.07)', filter: LIFT, offset: .28 },
+      { transform: 'translate(-168%, -8%) rotate(-12deg) scale(1.07)', filter: LIFT }], 1300, 'cubic-bezier(.55,0,.75,.45)');
+    S.onPlatter = false;
+  }
+  await loadArt(track);
+  await flight([{ transform: 'translate(0, 125%) rotate(8deg) scale(1.07)', filter: LIFT },
+    { transform: 'scale(1.07)', filter: LIFT, offset: .72 },
+    { transform: 'none', filter: 'none' }], 1700, 'cubic-bezier(.25,.6,.3,1)');
+  S.onPlatter = true; S.swapping = false;
+  setTimeout(renderPlaying, 250);
+  if (S.queued) { const q = S.queued; S.queued = null; swapRecord(q); }
 }
 function ambientFrom(img) { // tint the room with the album's dominant colour
   try {
@@ -129,8 +175,7 @@ function onState(s) {
   const changed = !S.track || S.track.id !== track.id;
   S.paused = s.paused; S.pos = s.position; S.dur = s.duration || 1; S.stamp = Date.now();
   if (changed) {
-    const had = !!S.track; S.track = track; showTrack(track);
-    if (had && !s.paused) { S.armLifted = true; setArm(ARM.rest); setTimeout(() => { S.armLifted = false; renderArm(); }, 1500); }
+    S.track = track; showTrack(track); swapRecord(track);
   }
   $('bShuffle').classList.toggle('on', !!s.shuffle);
   renderPlaying();
@@ -154,8 +199,8 @@ async function togglePlay() {
   const last = store.get('last');
   if (last) playContext(last); else openSheet();
 }
-const next = () => !DEMO && S.player && S.player.nextTrack();
-const prev = () => !DEMO && S.player && S.player.previousTrack();
+const next = () => DEMO ? demoSkip(1) : S.player && S.player.nextTrack();
+const prev = () => DEMO ? demoSkip(-1) : S.player && S.player.previousTrack();
 
 async function openSheet() {
   $('sheet').classList.remove('hidden'); hideControlsSoon(true);
@@ -182,6 +227,7 @@ let hideTimer;
 function showControls() { $('controls').classList.remove('hidden'); document.body.classList.add('ctl'); hideControlsSoon(); }
 function hideControlsSoon(now) { clearTimeout(hideTimer); hideTimer = setTimeout(() => { $('controls').classList.add('hidden'); document.body.classList.remove('ctl'); }, now ? 0 : 6000); }
 $('stage').addEventListener('click', e => {
+  if (e.target.closest('#ctl, #pitch')) return;
   if (e.target.closest('#record, #label, #platter')) { togglePlay(); showControls(); }
   else if ($('controls').classList.contains('hidden')) showControls(); else hideControlsSoon(true);
 });
@@ -192,6 +238,19 @@ $('stage').addEventListener('touchend', e => {
   if (Math.abs(dx) > 70 && Math.abs(dy) < 60) { dx < 0 ? next() : prev(); showControls(); }
 }, { passive: true });
 $('controls').addEventListener('pointerdown', () => { clearTimeout(hideTimer); hideControlsSoon(); });
+$('startstop').onclick = togglePlay;
+let rpmBase = 1, rpmPitch = 1; // visual only: the speed buttons and pitch fader change how fast the record turns
+const setRpm = () => { rpmFactor = rpmBase * rpmPitch; };
+document.querySelectorAll('.pbtn[data-spd]').forEach(b => b.onclick = () => {
+  rpmBase = b.dataset.spd === '45' ? 1.36 : 1; setRpm();
+  document.querySelectorAll('.pbtn[data-spd]').forEach(x => x.classList.toggle('on', x === b));
+});
+$('spd33').classList.add('on');
+{ const slot = document.querySelector('#pitch .slot'), fader = document.querySelector('#pitch .fader');
+  const move = e => { const r = slot.getBoundingClientRect(), f = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+    fader.style.top = (f * 100) + '%'; fader.style.marginTop = 'calc(var(--u) * -1.2)'; rpmPitch = 1.08 - f * 0.16; setRpm(); };
+  slot.parentElement.addEventListener('pointerdown', e => { e.stopPropagation(); slot.setPointerCapture?.(e.pointerId); move(e); slot.onpointermove = move; });
+  slot.parentElement.addEventListener('pointerup', () => { slot.onpointermove = null; }); }
 $('bPlay').onclick = togglePlay; $('bNext').onclick = next; $('bPrev').onclick = prev;
 $('bPlaylists').onclick = openSheet; $('sheetClose').onclick = () => $('sheet').classList.add('hidden');
 $('bShuffle').onclick = async () => {
@@ -243,10 +302,20 @@ async function init() {
   setTimeout(showControls, 600);
 }
 
-function demo() { // ?demo=1 : preview without Spotify
-  const art = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-    "<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#f6c37a'/><stop offset='.55' stop-color='#d9783c'/><stop offset='1' stop-color='#3a2a3f'/></linearGradient></defs><rect width='300' height='300' fill='url(#g)'/><circle cx='150' cy='150' r='58' fill='#ffe3a8'/><rect y='190' width='300' height='110' fill='#2a1d2c'/></svg>");
-  S.track = { id: 'demo', name: 'Golden Hour', artist: 'Demo Artist', art }; S.dur = 200000; S.pos = 40000; S.stamp = Date.now(); S.paused = new URLSearchParams(location.search).get('demo') === 'paused';
-  $('art').src = art; $('art').onload = () => ambientFrom($('art')); showTrack(S.track); renderPlaying(); showControls();
+const DEMO_TRACKS = [['Golden Hour', 'Demo Artist', '#f6c37a', '#d9783c', '#3a2a3f', '#ffe3a8'],
+  ['Blue Hours', 'Night Owls', '#7fb2ff', '#3d5fc4', '#101a3d', '#e6f1ff'],
+  ['Green Room', 'The Fernes', '#b7e08a', '#4a9a5b', '#12301f', '#f3ffd9']].map(([name, artist, c1, c2, c3, sun]) => ({
+  id: name, name, artist, art: 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='${c1}'/><stop offset='.55' stop-color='${c2}'/><stop offset='1' stop-color='${c3}'/></linearGradient></defs><rect width='300' height='300' fill='url(#g)'/><circle cx='150' cy='150' r='58' fill='${sun}'/><rect y='190' width='300' height='110' fill='${c3}'/></svg>`) }));
+let demoIdx = 0;
+function demoSkip(d) {
+  demoIdx = (demoIdx + d + DEMO_TRACKS.length) % DEMO_TRACKS.length;
+  S.track = DEMO_TRACKS[demoIdx]; S.pos = 0; S.stamp = Date.now(); showTrack(S.track); swapRecord(S.track);
+}
+function demo() { // ?demo=1 : preview without Spotify. ?demo=paused starts stopped, ?demo=swap skips a song after 1.5 s
+  const mode = new URLSearchParams(location.search).get('demo');
+  S.track = DEMO_TRACKS[0]; S.dur = 200000; S.pos = 40000; S.stamp = Date.now(); S.paused = mode === 'paused';
+  $('art').src = S.track.art; $('art').onload = () => ambientFrom($('art')); showTrack(S.track); renderPlaying(); showControls();
+  if (mode === 'swap') setTimeout(() => demoSkip(1), 1500);
 }
 init();
