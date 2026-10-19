@@ -146,7 +146,7 @@ let spinTarget = 0, rpmFactor = 1;
 
 /* ---------- playback state ---------- */
 const S = { track: null, paused: true, pos: 0, dur: 1, stamp: 0, deviceId: null, player: null,
-  swapping: false, onPlatter: false, queued: null, resumeWanted: false, cueing: false, dragging: false, userId: null };
+  swapping: false, holding: false, holdResume: false, onPlatter: false, queued: null, resumeWanted: false, cueing: false, dragging: false, userId: null };
 const curPos = () => S.paused ? S.pos : Math.min(S.dur, S.pos + (Date.now() - S.stamp));
 const isPlaying = () => !S.paused && !!S.track && !S.swapping;
 
@@ -221,7 +221,7 @@ async function swapRecord(track, resume) {
       { transform: 'none', filter: 'none' }], 1250, 'cubic-bezier(.25,.6,.3,1)');
     S.onPlatter = true; S.lastOn = t;
   }
-  S.swapping = false;
+  S.swapping = false; S.holding = false;
   if (S.resumeWanted) { S.resumeWanted = false; await cueAndPlay(true); } else renderPlaying();
 }
 async function cueAndPlay(fromStart) { // lower the arm onto the record, then start the music
@@ -247,10 +247,11 @@ function onState(s) {
   $('bShuffle').classList.toggle('on', !!s.shuffle);
   if (changed) {
     S.track = track; showTrack(track);
-    const playing = !s.paused;
-    if (playing) S.player.pause(); // no music until the new record is on the platter
+    const playing = !s.paused || S.holdResume;
+    S.holdResume = false; S.holding = true;
+    if (!s.paused) S.player.pause(); // no music until the new record is on the platter
     swapRecord(track, playing);
-  }
+  } else if (!s.paused && (S.holding || S.swapping)) S.player.pause(); // Spotify started late: keep it silent until the record is on
   renderPlaying();
 }
 setInterval(renderArm, 1000);
@@ -281,8 +282,15 @@ async function togglePlay() {
   const last = store.get('last');
   if (last) playSafe(typeof last === 'string' ? { context_uri: last } : last); else openSheet();
 }
-const next = () => DEMO ? demoSkip(1) : S.player && S.player.nextTrack();
-const prev = () => DEMO ? demoSkip(-1) : S.player && S.player.previousTrack();
+async function skip(dir) { // pause first, so the next song never sounds before its record is on the platter
+  if (DEMO) return demoSkip(dir);
+  if (!S.player) return;
+  S.holdResume = isPlaying() || S.resumeWanted || S.holdResume; S.holding = true;
+  clearTimeout(skip.t); skip.t = setTimeout(() => { if (!S.swapping) { S.holding = false; S.holdResume = false; } }, 6000);
+  try { if (!S.paused) await S.player.pause(); } catch {}
+  return dir > 0 ? S.player.nextTrack() : S.player.previousTrack();
+}
+const next = () => skip(1), prev = () => skip(-1);
 
 /* ---------- record crate: playlists, liked songs, albums, recently played ---------- */
 let tab = 'playlists';
