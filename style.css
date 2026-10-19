@@ -11,7 +11,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
   padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
 
 /* everything inside the plinth is sized in --u (1% of the plinth width) */
-#plinth { --w: min(92vw, calc((100vh - 118px) * 1.25)); --u: calc(var(--w) / 100);
+#plinth { --w: min(92vw, calc((100vh - 150px) * 1.25)); --u: calc(var(--w) / 100);
   position: relative; width: var(--w); height: calc(var(--u) * 80); border-radius: calc(var(--u) * 1.4);
   background:
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='700'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.16' numOctaves='4' seed='7'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.04  0 0 0 0 0.012  2.6 0 0 0 -0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>"),
@@ -199,3 +199,24 @@ body.ctl #nowplaying { opacity: 0 !important; }
   background: linear-gradient(180deg, rgba(0,0,0,.32), rgba(0,0,0,.18)); box-shadow: inset 0 1px 3px rgba(0,0,0,.6), 0 1px 0 rgba(255,225,180,.14); }
 #led, #powerknob::before { }
 #powerknob::before { content: ""; position: absolute; inset: calc(var(--u) * -1.1); border-radius: 50%; background: radial-gradient(circle, transparent 62%, rgba(0,0,0,.5) 64%, rgba(0,0,0,.2) 80%, transparent 82%); }
+
+/* ---------- v4.2: brushed-metal trim frame, VU meters, glass lid ---------- */
+#plinth { border: calc(var(--u) * 1) solid transparent;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='700'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.16' numOctaves='4' seed='7'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.04  0 0 0 0 0.012  2.6 0 0 0 -0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>") padding-box,
+    linear-gradient(160deg, #5e3622 0%, #43241a 45%, #52301f 100%) padding-box,
+    repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 1px, rgba(0,0,0,.05) 1px 2px) border-box,
+    linear-gradient(135deg, #ececec 0%, #9a9a9a 22%, #dcdcdc 45%, #7c7c7c 68%, #d4d4d4 100%) border-box;
+  background-size: cover, cover, auto, auto; }
+.vu { position: absolute; top: calc(var(--u) * 70.6); width: calc(var(--u) * 10.4); height: calc(var(--u) * 6); border-radius: calc(var(--u) * .5); overflow: hidden;
+  background: radial-gradient(ellipse at 50% 120%, #fff1c8, #e8c47a 70%, #b98f45); box-shadow: inset 0 calc(var(--u) * .3) calc(var(--u) * .7) rgba(0,0,0,.65), 0 0 0 calc(var(--u) * .3) #1d1a17, 0 1px 0 calc(var(--u) * .3) rgba(255,225,180,.2); }
+.vu::before { content: ""; position: absolute; left: 10%; right: 10%; top: 24%; height: 160%; border-radius: 50%; border: calc(var(--u) * .13) solid rgba(58,42,24,.8); }
+.vu::after { content: "VU"; position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); font: 700 calc(var(--u) * 1) Georgia, serif; color: #3a2a18; }
+.vu i { position: absolute; left: 50%; bottom: -12%; width: calc(var(--u) * .16); height: 84%; margin-left: calc(var(--u) * -.08); background: #1c1c1c; border-radius: 2px; transform-origin: 50% 100%; transform: rotate(-44deg); }
+.vu .red { position: absolute; right: 8%; top: 18%; width: 20%; height: calc(var(--u) * .35); background: #b23a2a; transform: rotate(-28deg); border-radius: 2px; opacity: .85; }
+#vuL { left: calc(var(--u) * 19.5); } #vuR { left: calc(var(--u) * 31.5); }
+#silkDrive { left: auto; right: calc(var(--u) * 29); transform: none; }
+#lid { position: absolute; inset: calc(var(--u) * -1); border-radius: inherit; pointer-events: none; z-index: 3; transition: opacity .8s, transform .8s;
+  background: linear-gradient(125deg, rgba(255,255,255,.045), transparent 40%, rgba(255,255,255,.03) 78%, transparent);
+  box-shadow: inset 0 0 0 calc(var(--u) * .12) rgba(255,255,255,.14), inset 0 0 calc(var(--u) * 3) rgba(255,255,255,.04); }
+body.lidoff #lid { opacity: 0; transform: translateY(calc(var(--u) * -1.2)); }
