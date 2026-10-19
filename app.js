@@ -129,7 +129,7 @@ const setArm = deg => { armDeg = deg; $('tonearm').style.setProperty('--arm', de
 { // park the arm rest under the tube at its resting angle
   const r = ARM.rest * Math.PI / 180, ly = 30, lx = 3.2, a = $('armrest');
   a.style.left = (ARM.P[0] + lx * Math.cos(r) - ly * Math.sin(r)) + '%';
-  a.style.top = (ARM.P[1] + lx * Math.sin(r) + ly * Math.cos(r)) / 0.75 + '%'; // plinth is 75u tall
+  a.style.top = (ARM.P[1] + lx * Math.sin(r) + ly * Math.cos(r)) / 0.80 + '%'; // plinth is 80u tall
 }
 
 const spinFx = { duration: CFG.spinSeconds * 1000, iterations: Infinity };
@@ -228,7 +228,10 @@ async function cueAndPlay(fromStart) { // lower the arm onto the record, then st
   S.cueing = true; renderPlaying();
   setArm(ARM_OUT + (ARM_IN - ARM_OUT) * (fromStart ? 0 : clamp(curPos() / S.dur, 0, 1)));
   await sleep(1050); Sound.drop();
-  try { if (fromStart) await P.seek(0); await P.resume(); } catch (e) { toast(e.message); }
+  try {
+    if (S.after) { const go = S.after; S.after = null; setTimeout(() => { S.expect = null; }, 4000); await go(); await sleep(250); await P.resume(); } // skip: Spotify moves to the new song only now
+    else { if (fromStart) await P.seek(0); await P.resume(); }
+  } catch (e) { toast(e.message); }
   await sleep(700); S.cueing = false; renderPlaying();
   if (!DEMO) setTimeout(() => { if (S.paused && !S.swapping) toast('Tap the record to keep playing'); }, 1500);
 }
@@ -242,6 +245,8 @@ function onState(s) {
   if (!s || !s.track_window.current_track) return;
   const t = s.track_window.current_track;
   const track = { id: t.id || t.uri, uri: t.uri, name: t.name, artist: t.artists.map(a => a.name).join(', '), art: (t.album.images[0] || {}).url };
+  if (S.expect && S.expect !== track.id && (S.swapping || S.after)) { if (!s.paused) S.player.pause(); return; } // still the old song while the record is being changed
+  if (S.expect === track.id) S.expect = null;
   const changed = !S.track || S.track.id !== track.id;
   S.paused = s.paused; S.pos = s.position; S.dur = s.duration || 1; S.stamp = Date.now();
   $('bShuffle').classList.toggle('on', !!s.shuffle);
@@ -282,13 +287,23 @@ async function togglePlay() {
   const last = store.get('last');
   if (last) playSafe(typeof last === 'string' ? { context_uri: last } : last); else openSheet();
 }
-async function skip(dir) { // pause first, so the next song never sounds before its record is on the platter
+function trackOf(t) { return { id: t.id || t.uri, uri: t.uri, name: t.name, artist: t.artists.map(a => a.name).join(', '), art: (t.album.images[0] || {}).url }; }
+async function skip(dir) { // the record changes first; Spotify is only told to skip when the needle drops, so the song starts once
   if (DEMO) return demoSkip(dir);
-  if (!S.player) return;
-  S.holdResume = isPlaying() || S.resumeWanted || S.holdResume; S.holding = true;
-  clearTimeout(skip.t); skip.t = setTimeout(() => { if (!S.swapping) { S.holding = false; S.holdResume = false; } }, 6000);
+  if (!S.player || S.cueing) return;
+  if (S.swapping) { S.resumeWanted = true; return; }
+  const st = await S.player.getCurrentState().catch(() => null);
+  const w = st && st.track_window, cand = w && (dir > 0 ? w.next_tracks[0] : w.previous_tracks[w.previous_tracks.length - 1]);
+  const wasPlaying = isPlaying();
+  if (dir < 0 && curPos() > 3000) { // like a real "back": restart this record
+    S.swapping = true; renderPlaying(); try { await S.player.pause(); } catch {}
+    S.swapping = false; return cueAndPlay(true);
+  }
+  if (!cand) { S.holdResume = wasPlaying; S.holding = true; try { await S.player.pause(); } catch {} return dir > 0 ? S.player.nextTrack() : S.player.previousTrack(); }
+  const track = trackOf(cand);
+  S.expect = track.id; S.after = () => dir > 0 ? S.player.nextTrack() : S.player.previousTrack();
   try { if (!S.paused) await S.player.pause(); } catch {}
-  return dir > 0 ? S.player.nextTrack() : S.player.previousTrack();
+  S.track = track; showTrack(track); swapRecord(track, true);
 }
 const next = () => skip(1), prev = () => skip(-1);
 
