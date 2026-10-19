@@ -1,0 +1,77 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024' width='1024' height='1024'>
+<defs>
+  <radialGradient id='bg' cx='.32' cy='.38' r='.95'><stop offset='0' stop-color='#6b3f25'/><stop offset='.5' stop-color='#34200f'/><stop offset='1' stop-color='#0f0a07'/></radialGradient>
+  <filter id='grain' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.34' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.04  0 0 0 0 0.01  2.2 0 0 0 -0.85'/></filter>
+  <linearGradient id='rim' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#ffffff'/><stop offset='.28' stop-color='#9a9a9a'/><stop offset='.5' stop-color='#f0f0f0'/><stop offset='.74' stop-color='#6c6c6c'/><stop offset='1' stop-color='#e4e4e4'/></linearGradient>
+  <radialGradient id='rec' cx='.5' cy='.5' r='.5'><stop offset='0' stop-color='#2a2a2e'/><stop offset='1' stop-color='#09090a'/></radialGradient>
+  <linearGradient id='lab' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#f8c97e'/><stop offset='.55' stop-color='#e2743a'/><stop offset='1' stop-color='#4a2f45'/></linearGradient>
+  <radialGradient id='chrome' cx='.35' cy='.3'><stop offset='0' stop-color='#ffffff'/><stop offset='.55' stop-color='#a9a9a9'/><stop offset='1' stop-color='#5a5a5a'/></radialGradient>
+  <linearGradient id='brass' x1='0' x2='1'><stop offset='0' stop-color='#7a5a22'/><stop offset='.35' stop-color='#fbe7a6'/><stop offset='.6' stop-color='#c9a14a'/><stop offset='1' stop-color='#6e4f1c'/></linearGradient>
+  <linearGradient id='steel' x1='0' x2='1'><stop offset='0' stop-color='#4d4d4d'/><stop offset='.3' stop-color='#cfcfcf'/><stop offset='.45' stop-color='#ffffff'/><stop offset='1' stop-color='#555'/></linearGradient>
+  <clipPath id='recclip'><circle cx='470' cy='565' r='334'/></clipPath>
+  <clipPath id='labclip'><circle cx='470' cy='565' r='126'/></clipPath>
+  <filter id='soft'><feGaussianBlur stdDeviation='7'/></filter>
+  <filter id='shadow' x='-20%' y='-20%' width='140%' height='140%'><feDropShadow dx='12' dy='18' stdDeviation='10' flood-color='#000' flood-opacity='.55'/></filter>
+  <filter id='shadowL' x='-20%' y='-20%' width='140%' height='140%'><feGaussianBlur stdDeviation='16'/></filter>
+</defs>
+<rect width='1024' height='1024' fill='url(#bg)'/>
+<rect width='1024' height='1024' filter='url(#grain)' opacity='.5'/>
+<ellipse cx='330' cy='250' rx='420' ry='300' fill='rgba(255,200,140,.10)' filter='url(#shadowL)'/>
+
+<g transform='translate(510 512) scale(.88) translate(-510 -474)'>
+<circle cx='484' cy='591' r='384' fill='#000' opacity='.55' filter='url(#shadowL)'/>
+<circle cx='470' cy='565' r='376' fill='url(#rim)'/>
+<circle cx='470' cy='565' r='359' fill='none' stroke='#1c1c1c' stroke-width='15' stroke-dasharray='5.2 9' opacity='.85'/>
+<circle cx='470' cy='565' r='344' fill='#101010'/>
+<circle cx='470' cy='565' r='336' fill='none' stroke='rgba(255,255,255,.18)' stroke-width='2'/>
+<circle cx='470' cy='565' r='334' fill='url(#rec)'/>
+<g clip-path='url(#recclip)'>
+  <circle cx='470' cy='565' r='150' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='161' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='172' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='183' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='194' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='205' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='216' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='227' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='238' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='249' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='260' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='271' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='282' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='293' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='304' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='315' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='326' fill='none' stroke='rgba(255,255,255,.055)' stroke-width='2'/><circle cx='470' cy='565' r='232' fill='none' stroke='rgba(0,0,0,.55)' stroke-width='5'/><circle cx='470' cy='565' r='268' fill='none' stroke='rgba(0,0,0,.55)' stroke-width='5'/><circle cx='470' cy='565' r='301' fill='none' stroke='rgba(0,0,0,.55)' stroke-width='5'/>
+  <circle cx='470' cy='565' r='327' fill='none' stroke='rgba(255,255,255,.1)' stroke-width='3'/>
+  <path d='M470 565 L148.9 472.9 A334 334 0 0 1 293.0 281.8 Z' fill='rgba(255,255,255,.16)' filter='url(#soft)'/>
+  <path d='M470 565 L791.1 657.1 A334 334 0 0 1 647.0 848.2 Z' fill='rgba(255,255,255,.12)' filter='url(#soft)'/>
+  <path d='M470 565 L199.8 368.7 A334 334 0 0 1 229.7 333.0 Z' fill='rgba(255,255,255,.1)' filter='url(#soft)'/>
+</g>
+<circle cx='470' cy='565' r='134' fill='#050505'/>
+<g clip-path='url(#labclip)'>
+  <rect x='340' y='435' width='260' height='260' fill='url(#lab)'/>
+  <circle cx='470' cy='547' r='50' fill='#ffe6ac'/>
+  <rect x='340' y='587' width='260' height='110' fill='#3b2a40'/>
+  <path d='M340 587 Q410 569 470 587 T600 587 V605 H340Z' fill='#4a3350'/>
+  <circle cx='470' cy='565' r='96' fill='none' stroke='rgba(0,0,0,.22)' stroke-width='3'/>
+</g>
+<circle cx='470' cy='565' r='126' fill='none' stroke='rgba(255,255,255,.2)' stroke-width='3'/>
+<circle cx='470' cy='565' r='24' fill='url(#chrome)' filter='url(#shadow)'/>
+<circle cx='464' cy='558' r='6' fill='#fff' opacity='.9'/>
+
+<!-- tonearm -->
+<g filter='url(#shadow)'>
+  <g transform='translate(818 214) rotate(19)'>
+    <rect x='-11' y='-86' width='22' height='70' fill='url(#steel)'/>
+    <rect x='-46' y='-205' width='92' height='124' rx='16' fill='url(#brass)'/>
+    <rect x='-46' y='-205' width='92' height='20' rx='10' fill='rgba(0,0,0,.35)'/>
+    <g fill='rgba(0,0,0,.45)'><rect x='-46' y='-172' width='92' height='4'/><rect x='-46' y='-150' width='92' height='4'/><rect x='-46' y='-128' width='92' height='4'/></g>
+    <g fill='rgba(255,255,255,.45)'><rect x='-46' y='-167' width='92' height='2'/><rect x='-46' y='-145' width='92' height='2'/><rect x='-46' y='-123' width='92' height='2'/></g>
+    <rect x='-46' y='-104' width='92' height='16' fill='#1a1714'/>
+  </g>
+  <path d='M818 214 C 800 330 790 420 748 500 C 715 560 690 580 676 626' fill='none' stroke='#5b4a22' stroke-width='30' stroke-linecap='round'/>
+  <path d='M818 214 C 800 330 790 420 748 500 C 715 560 690 580 676 626' fill='none' stroke='url(#steel)' stroke-width='21' stroke-linecap='round'/>
+  <path d='M814 214 C 796 330 786 420 744 500 C 711 560 686 580 672 626' fill='none' stroke='rgba(255,255,255,.85)' stroke-width='4' stroke-linecap='round'/>
+  <circle cx='818' cy='214' r='88' fill='url(#chrome)'/>
+  <circle cx='818' cy='214' r='88' fill='none' stroke='rgba(0,0,0,.35)' stroke-width='5'/>
+  <circle cx='818' cy='214' r='64' fill='none' stroke='rgba(0,0,0,.28)' stroke-width='3'/>
+  <circle cx='818' cy='214' r='46' fill='url(#brass)'/>
+  <circle cx='818' cy='214' r='46' fill='none' stroke='rgba(0,0,0,.35)' stroke-width='3'/>
+  <circle cx='818' cy='214' r='15' fill='#1a1612'/>
+  <g transform='translate(676 624) rotate(22)'>
+    <path d='M-30 -26 H30 L38 84 H-38Z' fill='#1b1b1d'/>
+    <path d='M-20 -14 H20 L26 70 H-26Z' fill='rgba(255,255,255,.07)'/>
+    <rect x='-24' y='4' width='48' height='74' rx='7' fill='url(#brass)'/>
+    <rect x='-24' y='4' width='48' height='9' rx='4' fill='rgba(255,255,255,.55)'/>
+    <path d='M-9 78 H9 L0 104Z' fill='#d8d8d8'/>
+    <circle cx='-22' cy='-12' r='5' fill='#8a8a8a'/><circle cx='22' cy='-12' r='5' fill='#8a8a8a'/>
+  </g>
+</g>
+</g>
+<rect width='1024' height='1024' fill='none' stroke='rgba(255,255,255,.07)' stroke-width='4'/>
+</svg>
