@@ -170,11 +170,16 @@ function recalcArm() { // some skins draw a smaller platter (--pscale); the groo
 }
 let armDeg = ARM.rest;
 const setArm = deg => { armDeg = deg; $('tonearm').style.setProperty('--arm', deg + 'deg'); };
-{ // park the arm rest under the tube at its resting angle
-  const r = ARM.rest * Math.PI / 180, ly = 30, lx = 3.2, a = $('armrest');
-  a.style.left = 'calc(var(--u) * ' + (ARM.P[0] + lx * Math.cos(r) - ly * Math.sin(r)) + ')';
-  a.style.top = 'calc(var(--u) * ' + (ARM.P[1] + lx * Math.sin(r) + ly * Math.cos(r)) + ')';
+function placeRest() { // the fork sits exactly where the visible tube is when the arm is parked
+  const svg = document.querySelector('#tonearm svg'), g = [...svg.querySelectorAll('.arm-s, .arm-x, .arm-j')].find(e => getComputedStyle(e).display !== 'none');
+  const path = g && g.querySelector('path'); let px = 3.2, py = 28.5;
+  if (path) { const L = path.getTotalLength(); let lo = 0, hi = L; for (let k = 0; k < 24; k++) { const m = (lo + hi) / 2; path.getPointAtLength(m).y < 28.5 ? lo = m : hi = m; }
+    const pt = path.getPointAtLength(lo); px = pt.x; py = pt.y; }
+  const r = ARM.rest * Math.PI / 180, ly = py + 1.05, a = $('armrest');
+  a.style.left = 'calc(var(--u) * ' + (ARM.P[0] + px * Math.cos(r) - ly * Math.sin(r)) + ')';
+  a.style.top = 'calc(var(--u) * ' + (ARM.P[1] + px * Math.sin(r) + ly * Math.cos(r)) + ')';
 }
+placeRest();
 
 { // real strobe ring: four rows of round dots on a brushed metal band (like a Technics platter edge)
   const ring = (dark) => {
@@ -230,24 +235,28 @@ function showTrack(t) { // title and artist text
     np.style.opacity = 1;
   }, 350);
 }
-function coverColour(img) { // main colour of the cover: weighted by how colourful each pixel is; grey covers give grey
-  const N = 24, c = document.createElement('canvas'); c.width = c.height = N;
+function coverColour(img) { // main colour of the cover; muted covers (brown, olive, navy) keep their hue, only colourless covers go grey
+  const N = 28, c = document.createElement('canvas'); c.width = c.height = N;
   const x = c.getContext('2d'); x.drawImage(img, 0, 0, N, N);
   const d = x.getImageData(0, 0, N, N).data, bins = Array.from({ length: 12 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
-  let lum = 0, satSum = 0, n = 0;
+  let lum = 0, n = 0, tr = 0, tg = 0, tb = 0, tw = 0;
   for (let i = 0; i < d.length; i += 4) {
-    const r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-    const l = (mx + mn) / 2, sat = mx === mn ? 0 : (mx - mn) / (255 - Math.abs(mx + mn - 255) || 1);
-    lum += l; satSum += sat; n++;
-    if (sat < .25 || mx < 45 || mn > 235) continue; // greys, near-black and near-white do not vote for a colour
-    let h = mx === r ? (g - b) / (mx - mn) : mx === g ? 2 + (b - r) / (mx - mn) : 4 + (r - g) / (mx - mn);
-    h = ((h * 60) + 360) % 360; const bin = bins[Math.floor(h / 30) % 12], w = sat * sat;
-    bin.w += w; bin.r += r * w; bin.g += g * w; bin.b += b * w;
+    const r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), diff = mx - mn;
+    lum += (mx + mn) / 2; n++;
+    if (mx < 24 || mn > 238) continue; // pure black / white do not count
+    const sat = diff / (mx || 1);       // plain HSV saturation: dark browns still read as saturated
+    if (diff < 14) continue;            // real greys: no colour to vote for
+    let h = mx === r ? (g - b) / diff : mx === g ? 2 + (b - r) / diff : 4 + (r - g) / diff;
+    h = ((h * 60) + 360) % 360; const bin = bins[Math.floor(h / 30) % 12], w = sat * sat * (0.4 + mx / 400);
+    bin.w += w; bin.r += r * w; bin.g += g * w; bin.b += b * w; tr += r * w; tg += g * w; tb += b * w; tw += w;
   }
-  const best = bins.reduce((a, b) => b.w > a.w ? b : a);
-  if (best.w < n * .02) { const g = Math.round(Math.max(55, Math.min(175, lum / n))); return [g, g, g + 4].join(','); } // no real colour: grey
-  let rgb = [best.r, best.g, best.b].map(v => v / best.w);
-  const mx = Math.max(...rgb), f = mx < 150 ? 150 / mx : mx > 215 ? 215 / mx : 1; // even brightness so dark covers still read
+  // a hue and its two neighbours count together, so one colour split across bins still wins
+  const score = bins.map((_, i) => bins[i].w + .5 * (bins[(i + 11) % 12].w + bins[(i + 1) % 12].w));
+  const bi = score.indexOf(Math.max(...score)), best = bins[bi];
+  if (tw < n * .015 || best.w <= 0) { const g = Math.round(Math.max(60, Math.min(170, lum / n))); return [g, g, g + 3].join(','); }
+  const mix = [bins[bi], bins[(bi + 11) % 12], bins[(bi + 1) % 12]].reduce((a, b) => ({ w: a.w + b.w, r: a.r + b.r, g: a.g + b.g, b: a.b + b.b }), { w: 0, r: 0, g: 0, b: 0 });
+  let rgb = [mix.r, mix.g, mix.b].map(v => v / mix.w);
+  const mx = Math.max(...rgb), f = mx < 140 ? 140 / mx : mx > 215 ? 215 / mx : 1; // even brightness so dark covers still read
   return rgb.map(v => Math.round(Math.min(255, v * f))).join(',');
 }
 function ambientFrom(img) { // tint the room with the album's dominant colour
@@ -601,7 +610,6 @@ document.querySelectorAll('.pbtn[data-spd]').forEach(b => b.onclick = () => {
   document.querySelectorAll('.pbtn[data-spd]').forEach(x => x.classList.toggle('on', x === b));
 });
 $('spd33').classList.add('on'); document.documentElement.dataset.rpm = '33';
-$('powerknob').addEventListener('click', e => { e.stopPropagation(); (document.documentElement.dataset.rpm === '45' ? $('spd33') : $('spd45')).click(); });
 { const slot = document.querySelector('#pitch .slot'), fader = document.querySelector('#pitch .fader');
   const move = e => { const r = slot.getBoundingClientRect(), f = clamp((e.clientY - r.top) / r.height, 0, 1);
     fader.style.top = (f * 100) + '%'; fader.style.marginTop = 'calc(var(--u) * -1.2)';
@@ -642,7 +650,7 @@ function applySkin(id) {
   document.documentElement.dataset.skin = k.id;
   $('badge').querySelector('b').textContent = k.badge[0]; $('badge').querySelector('span').textContent = k.badge[1];
   $('silkDrive').textContent = k.drive;
-  recalcArm(); if (typeof renderArm === 'function') renderArm();
+  recalcArm(); placeRest(); if (typeof renderArm === 'function') renderArm();
   document.querySelector('meta[name=theme-color]').content = k.room;
   document.querySelectorAll('#skinList .skin').forEach(c => c.classList.toggle('on', c.dataset.id === k.id));
   return k;

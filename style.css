@@ -456,3 +456,8 @@ html[data-disc="picture"] #sheen { -webkit-mask: none; mask: none; }
 html[data-disc="cover"], .sw[data-d="cover"] { --rec-bg: radial-gradient(circle, rgba(255,255,255,.1), rgba(0,0,0,.35) 100%), linear-gradient(rgba(0,0,0,.32), rgba(0,0,0,.32)), rgb(var(--amb)); --g1: 0,0,0; --ga: .13; --g2: 255,255,255; --ga2: .08; --ring: .3; --runout: .22; --rec-ring: rgba(0,0,0,.55); --sheen-a: .3; }
 .sw[data-d="cover"] { --rec-bg: conic-gradient(from 20deg, #c8352f, #8f8f94, #2f5fbf, #3aa86a, #c8352f); }
 #record { transition: background 1.2s ease; }
+
+/* v14: the loose lever beside the arm base is gone on every skin */
+#armbase .lift { display: none !important; }
+/* record picker swatches always show their own colour (they inherited the selected record's colour before) */
+.sw[data-d="black"] { --rec-bg: radial-gradient(circle, #1d1d20, #0b0b0c); --g1: 255,255,255; --ga: .05; --g2: 0,0,0; --ga2: .3; --ring: .9; --runout: .75; --rec-ring: #050505; }
