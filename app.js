@@ -559,6 +559,19 @@ SKINS.forEach(k => {
   };
   $('skinList').appendChild(c);
 });
+const DISCS = [['black', 'Black'], ['clear', 'Clear'], ['white', 'White'], ['red', 'Red'], ['gold', 'Gold'], ['blue', 'Blue'], ['green', 'Green'], ['splatter', 'Splatter'], ['picture', 'Picture']];
+function applyDisc(id) {
+  const k = DISCS.find(x => x[0] === id) || DISCS[0];
+  document.documentElement.dataset.disc = k[0];
+  document.querySelectorAll('#discList .disc').forEach(b => b.classList.toggle('on', b.dataset.d === k[0]));
+}
+DISCS.forEach(([id, name]) => {
+  const b = document.createElement('button'); b.className = 'disc'; b.dataset.d = id;
+  b.innerHTML = `<i class="sw" data-d="${id}"></i><span>${name}</span>`;
+  b.onclick = () => { store.set('disc', id); applyDisc(id); };
+  $('discList').appendChild(b);
+});
+applyDisc(new URLSearchParams(location.search).get('disc') || store.get('disc') || 'black');
 const openSkins = () => { $('sheet').classList.add('hidden'); $('skinSheet').classList.remove('hidden'); clearTimeout(hideTimer); };
 const closeSkins = () => { $('skinSheet').classList.add('hidden'); hideControlsSoon(); };
 $('bSkin').onclick = () => $('skinSheet').classList.contains('hidden') ? openSkins() : closeSkins();
