@@ -449,3 +449,10 @@ html[data-disc="picture"] #sheen { -webkit-mask: none; mask: none; }
 .playing #tonearm::before { transform: translate(calc(var(--u) * .45), calc(var(--u) * .55)); opacity: 1; }
 .playing #tonearm::after { content: ""; position: absolute; left: calc(var(--u) * 2.45); top: calc(var(--u) * 41.7); width: calc(var(--u) * 1.6); height: calc(var(--u) * 1.6); border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle closest-side, rgba(255,236,200,.38), rgba(255,236,200,.1) 45%, transparent); }
+
+/* anti-skate dial: out of the way of the arm rest and the needle, top right of the platter */
+#antiskate { left: calc(var(--u) * 72.4) !important; top: calc(var(--u) * 5.4) !important; }
+/* record colour taken from the cover art (--amb is set from the album picture) */
+html[data-disc="cover"], .sw[data-d="cover"] { --rec-bg: radial-gradient(circle, rgba(255,255,255,.1), rgba(0,0,0,.35) 100%), linear-gradient(rgba(0,0,0,.32), rgba(0,0,0,.32)), rgb(var(--amb)); --g1: 0,0,0; --ga: .13; --g2: 255,255,255; --ga2: .08; --ring: .3; --runout: .22; --rec-ring: rgba(0,0,0,.55); --sheen-a: .3; }
+.sw[data-d="cover"] { --rec-bg: conic-gradient(from 20deg, #c8352f, #8f8f94, #2f5fbf, #3aa86a, #c8352f); }
+#record { transition: background 1.2s ease; }

@@ -168,8 +168,8 @@ let armDeg = ARM.rest;
 const setArm = deg => { armDeg = deg; $('tonearm').style.setProperty('--arm', deg + 'deg'); };
 { // park the arm rest under the tube at its resting angle
   const r = ARM.rest * Math.PI / 180, ly = 30, lx = 3.2, a = $('armrest');
-  a.style.left = (ARM.P[0] + lx * Math.cos(r) - ly * Math.sin(r)) + '%';
-  a.style.top = (ARM.P[1] + lx * Math.sin(r) + ly * Math.cos(r)) / 0.80 + '%'; // plinth is 80u tall
+  a.style.left = 'calc(var(--u) * ' + (ARM.P[0] + lx * Math.cos(r) - ly * Math.sin(r)) + ')';
+  a.style.top = 'calc(var(--u) * ' + (ARM.P[1] + lx * Math.sin(r) + ly * Math.cos(r)) + ')';
 }
 
 { // real strobe ring: four rows of round dots on a brushed metal band (like a Technics platter edge)
@@ -617,7 +617,7 @@ SKINS.forEach(k => {
   };
   $('skinList').appendChild(c);
 });
-const DISCS = [['black', 'Black'], ['clear', 'Clear'], ['white', 'White'], ['red', 'Red'], ['gold', 'Gold'], ['blue', 'Blue'], ['green', 'Green'], ['splatter', 'Splatter'], ['picture', 'Picture']];
+const DISCS = [['black', 'Black'], ['clear', 'Clear'], ['white', 'White'], ['red', 'Red'], ['gold', 'Gold'], ['blue', 'Blue'], ['green', 'Green'], ['splatter', 'Splatter'], ['picture', 'Picture'], ['cover', 'Cover colour']];
 function applyDisc(id) {
   const k = DISCS.find(x => x[0] === id) || DISCS[0];
   document.documentElement.dataset.disc = k[0];
