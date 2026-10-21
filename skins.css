@@ -1008,3 +1008,43 @@ html[data-skin="teak"][data-rpm="45"] #powerknob i { transform: rotate(0deg); }
 [data-skin="teak"] #lid { display: none; }
 html[data-skin="teak"] body.lidoff #deco .d5 { opacity: 0; }
 [data-skin="teak"] #deco .d5 { transition: opacity .8s; }
+
+/* =====================================================================
+   v14: back to 2D. Teak flat again; MARBLE detail pass
+   ===================================================================== */
+[data-skin="teak"] #plinth { transform: none; }
+[data-skin="teak"] #deco .d6 { display: none; }
+[data-skin="teak"] #deco .d5 { top: calc(var(--u) * -3.4); height: calc(var(--u) * 3); left: calc(var(--u) * 6); right: calc(var(--u) * 6); clip-path: none; }
+[data-skin="teak"] .hinge { top: calc(var(--u) * -2.4); height: calc(var(--u) * 3.4); }
+
+/* marked item 1: the loose lever beside the arm base is gone */
+[data-skin="marble"] #armbase .lift { display: none; }
+/* marked item 2: arm rest = brass post with a felt-lined cradle, only visible while the arm is parked */
+[data-skin="marble"] #armrest { transition: opacity .6s; transform: scale(.9); }
+[data-skin="marble"] .playing #armrest, [data-skin="marble"] #armrest.hidden { opacity: 0; }
+[data-skin="marble"] #armrest::before { background: radial-gradient(circle at 38% 30%, #fff3c4, #c9a14a 55%, #7a5a22); box-shadow: 0 calc(var(--u) * .5) calc(var(--u) * .7) rgba(70,55,25,.45), 0 0 0 calc(var(--u) * .12) rgba(110,80,25,.5); }
+[data-skin="marble"] #armrest::after { background: linear-gradient(90deg, #7a5a22, #fcefc4 45%, #8c6f30); }
+[data-skin="marble"] #armrest i { border-color: #8a6a28; background: none; box-shadow: inset 0 calc(var(--u) * -.3) 0 #b0302a; }
+
+/* marble: richer stone, bevelled edge, brass studs, softer contact shadows */
+[data-skin="marble"] #plinth { border-width: calc(var(--u) * 1); background-blend-mode: normal;
+  box-shadow: inset 0 calc(var(--u) * .2) 0 rgba(255,255,255,.95), inset 0 0 0 calc(var(--u) * .12) rgba(150,140,125,.5), inset 0 calc(var(--u) * -.3) 0 rgba(0,0,0,.1),
+    0 calc(var(--u) * .5) 0 #d8d3ca, 0 calc(var(--u) * 1) 0 #c4beb3, 0 calc(var(--u) * 1.5) 0 #aaa398,
+    0 calc(var(--u) * 3) calc(var(--u) * 3.5) rgba(70,58,44,.4), 0 calc(var(--u) * 6) calc(var(--u) * 8) rgba(70,58,44,.28); }
+[data-skin="marble"] #deco .d1 { inset: calc(var(--u) * 1.9); border: calc(var(--u) * .1) solid #c9a64f; box-shadow: 0 0 0 1px rgba(255,255,255,.8), inset 0 0 0 1px rgba(255,255,255,.6); }
+/* the platter: brass ring with a fine groove, white felt-like mat step, stronger shadow */
+[data-skin="marble"] #well { box-shadow: inset 0 calc(var(--u) * .5) calc(var(--u) * 1.3) rgba(60,50,40,.4), 0 0 0 calc(var(--u) * .3) #c9a64f, 0 0 0 calc(var(--u) * .55) rgba(255,255,255,.8), 0 0 0 calc(var(--u) * .7) rgba(150,125,70,.45), calc(var(--u) * .6) calc(var(--u) * 1.1) calc(var(--u) * 2) calc(var(--u) * .2) rgba(70,58,44,.32); }
+[data-skin="marble"] #rim { box-shadow: calc(var(--u) * .5) calc(var(--u) * 1) calc(var(--u) * 1.6) rgba(60,45,20,.5), 0 0 0 calc(var(--u) * .1) rgba(90,65,20,.6); }
+/* arm base: cleaner brass disc with a fine knurled ring */
+[data-skin="marble"] #armbase { box-shadow: 0 0 0 calc(var(--u) * .22) #c9a64f, 0 0 0 calc(var(--u) * .4) rgba(255,255,255,.7), calc(var(--u) * .7) calc(var(--u) * 1.2) calc(var(--u) * 1.4) rgba(60,45,20,.45); }
+/* the controls get an inset brass-edged panel with engraved labels */
+[data-skin="marble"] #ctl::before { background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(230,225,215,.5)); box-shadow: inset 0 0 0 1px rgba(201,166,79,.7), inset 0 1px 3px rgba(60,50,40,.25), 0 1px 0 #fff; }
+[data-skin="marble"] #pitch::after { content: ""; position: absolute; left: calc(var(--u) * -1.2); top: calc(var(--u) * -1.2); right: calc(var(--u) * -1); bottom: calc(var(--u) * -.6); border-radius: calc(var(--u) * .5); pointer-events: none; z-index: -1;
+  background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(228,222,212,.45)); box-shadow: inset 0 0 0 1px rgba(201,166,79,.65), inset 0 1px 3px rgba(60,50,40,.22), 0 1px 0 #fff; }
+[data-skin="marble"] #pitch .lab, [data-skin="marble"] #antiskate, [data-skin="marble"] .silk { color: rgba(110,85,40,.75); font-weight: 700; }
+[data-skin="marble"] #vfd { box-shadow: inset 0 calc(var(--u) * .2) calc(var(--u) * .5) #000, 0 0 0 calc(var(--u) * .3) #c9a64f, 0 0 0 calc(var(--u) * .5) rgba(255,255,255,.8), 0 calc(var(--u) * .6) calc(var(--u) * 1) rgba(60,45,20,.4); }
+[data-skin="marble"] #badge { box-shadow: calc(var(--u) * .5) calc(var(--u) * .8) calc(var(--u) * .9) rgba(60,45,20,.5), inset 0 0 0 calc(var(--u) * .12) rgba(255,246,200,.8), inset 0 0 0 calc(var(--u) * .26) rgba(110,80,25,.5); }
+/* anti-skate: brass knob with a clear tick ring */
+[data-skin="marble"] #antiskate .dial { box-shadow: 0 calc(var(--u) * .4) calc(var(--u) * .8) rgba(60,45,20,.5), 0 0 0 calc(var(--u) * .25) #c9a64f, 0 0 0 calc(var(--u) * .45) rgba(255,255,255,.8); }
+/* deeper veins: second vein layer in warm gold, softer cloud */
+[data-skin="marble"] #plinth::before { background: linear-gradient(115deg, rgba(255,255,255,.5), transparent 38%, rgba(255,255,255,.22) 70%, transparent), radial-gradient(ellipse 50% 40% at 80% 85%, rgba(201,166,79,.1), transparent 70%); }
