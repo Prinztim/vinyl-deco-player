@@ -461,3 +461,17 @@ html[data-disc="cover"], .sw[data-d="cover"] { --rec-bg: radial-gradient(circle,
 #armbase .lift { display: none !important; }
 /* record picker swatches always show their own colour (they inherited the selected record's colour before) */
 .sw[data-d="black"] { --rec-bg: radial-gradient(circle, #1d1d20, #0b0b0c); --g1: 255,255,255; --ga: .05; --g2: 0,0,0; --ga2: .3; --ring: .9; --runout: .75; --rec-ring: #050505; }
+
+/* crackle dial and sleep knob are real controls now */
+#antiskate, #powerknob { cursor: pointer; }
+#antiskate .dial { transition: transform .5s cubic-bezier(.3,0,.2,1); }
+html[data-crackle="on"] #antiskate .dial { transform: rotate(80deg); }
+html[data-crackle="on"] #antiskate { color: rgb(var(--led)); }
+html[data-sleep="on"] #powerknob { filter: drop-shadow(0 0 calc(var(--u) * .8) rgba(var(--led), .75)); }
+#sleepMenu { position: fixed; z-index: 12; min-width: 168px; padding: 8px; border-radius: 16px; background: rgba(22,18,14,.96); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,.1); box-shadow: 0 14px 36px rgba(0,0,0,.55); font-family: -apple-system, "Segoe UI", sans-serif; transition: opacity .2s, transform .2s; }
+#sleepMenu.hidden { opacity: 0; transform: translateY(-6px); pointer-events: none; }
+#sleepMenu .mh { padding: 6px 12px 8px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgba(233,223,207,.5); }
+#sleepMenu button { display: block; width: 100%; height: 40px; padding: 0 14px; border-radius: 10px; text-align: left; font-size: 15px; color: #efe3cf; }
+#sleepMenu button:active { background: rgba(255,255,255,.12); }
+#sleepMenu button.on { background: rgba(255,176,56,.16); color: #ffb038; }

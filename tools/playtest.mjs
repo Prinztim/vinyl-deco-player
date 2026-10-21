@@ -105,6 +105,21 @@ await ev("window.__body = songBody('spotify:track:t5', 'spotify:album:a1'); wind
 sp = await ev("({ a: window.__body, b: window.__body2 })");
 check('6d search song plays inside its album, with a fallback to the single song', sp.a.context_uri === 'spotify:album:a1' && sp.a.offset.uri === 'spotify:track:t5' && sp.b.uris[0] === 'spotify:track:t6', JSON.stringify(sp));
 
+// 6e. the top-left knob opens a sleep timer menu (15/30/45/60/Off); the crackle dial toggles the crackle; the bottom bar timer opens the same menu
+await ev("document.getElementById('powerknob').click()"); await sleep(200);
+let m1 = await ev("({ open: !document.getElementById('sleepMenu').classList.contains('hidden'), items: [...document.querySelectorAll('#sleepMenu button')].map(b => b.dataset.m).join() })");
+check('6e knob opens the sleep menu with 15, 30, 45, 60, Off', m1.open && m1.items === '15,30,45,60,0', JSON.stringify(m1));
+await ev("document.querySelector('#sleepMenu button[data-m=\"45\"]').click()"); await sleep(200);
+m1 = await ev("({ min: sleepMin, left: Math.round((sleepAt - Date.now()) / 60000), closed: document.getElementById('sleepMenu').classList.contains('hidden') })");
+check('6e choosing 45 sets the timer and closes the menu', m1.min === 45 && m1.left >= 44 && m1.closed, JSON.stringify(m1));
+await ev("document.getElementById('bTimer').click()"); await sleep(200);
+m1 = await ev("({ open: !document.getElementById('sleepMenu').classList.contains('hidden') })");
+check('6e the bottom bar timer button opens the menu too (no cycling)', m1.open && (await ev('sleepMin')) === 45, JSON.stringify(m1));
+await ev("document.querySelector('#sleepMenu button[data-m=\"0\"]').click()");
+let c0 = await ev("Sound.on"); await ev("document.getElementById('antiskate').click()"); let c1 = await ev("({ on: Sound.on, attr: document.documentElement.dataset.crackle })");
+check('6e the dial toggles the crackle', c1.on === !c0 && c1.attr === (c1.on ? 'on' : 'off'), JSON.stringify(c1));
+await ev("document.getElementById('antiskate').click()");
+
 // 7-10. the login survives: a refused access token is refreshed once and retried, only a revoked refresh token logs out
 const AUTH = (tokenReply, setup = '') => ev(`(async () => {
   ${setup}

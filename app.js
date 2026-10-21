@@ -553,15 +553,30 @@ setInterval(renderVfd, 500);
 $('vfd').addEventListener('click', e => { e.stopPropagation(); vfdMode = vfdMode === 'clock' ? 'time' : 'clock'; store.set('vfd', vfdMode); vfdFlashUntil = 0; renderVfd(); });
 
 /* sleep timer: stops the music after a while */
-const SLEEP_STEPS = [0, 15, 30, 60, 90];
-let sleepIdx = 0;
-$('bTimer').onclick = () => {
-  sleepIdx = (sleepIdx + 1) % SLEEP_STEPS.length; const m = SLEEP_STEPS[sleepIdx];
-  sleepAt = m ? Date.now() + m * 60000 : 0;
-  $('bTimer').classList.toggle('on', !!m);
+let sleepMin = 0;
+function setSleep(m) {
+  sleepMin = m; sleepAt = m ? Date.now() + m * 60000 : 0;
+  $('bTimer').classList.toggle('on', !!m); document.documentElement.dataset.sleep = m ? 'on' : '';
   toast(m ? `Sleep timer: music stops in ${m} min` : 'Sleep timer off'); flashVfd(m ? 'SL ' + m : 'SL --');
-};
-setInterval(() => { if (sleepAt && Date.now() > sleepAt) { sleepAt = 0; sleepIdx = 0; $('bTimer').classList.remove('on'); if (isPlaying()) P.pause(); toast('Sleep timer: good night'); } }, 5000);
+}
+function openSleepMenu(anchor) { // small drop-down next to the knob or button that was pressed
+  const menu = $('sleepMenu');
+  if (!menu.classList.contains('hidden') && menu.dataset.for === anchor.id) return closeSleepMenu();
+  menu.innerHTML = '<div class="mh">Sleep timer</div>' + [[15, '15 minutes'], [30, '30 minutes'], [45, '45 minutes'], [60, '60 minutes'], [0, 'Off']]
+    .map(([m, t]) => `<button data-m="${m}" class="${m === sleepMin ? 'on' : ''}">${t}</button>`).join('');
+  menu.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); setSleep(+b.dataset.m); closeSleepMenu(); });
+  menu.dataset.for = anchor.id; menu.classList.remove('hidden');
+  const r = anchor.getBoundingClientRect(), w = menu.offsetWidth, h = menu.offsetHeight;
+  const below = r.bottom + h + 12 < innerHeight;
+  menu.style.left = clamp(r.left + r.width / 2 - w / 2, 8, innerWidth - w - 8) + 'px';
+  menu.style.top = (below ? r.bottom + 8 : Math.max(8, r.top - h - 8)) + 'px';
+  clearTimeout(openSleepMenu.t); openSleepMenu.t = setTimeout(closeSleepMenu, 8000);
+}
+function closeSleepMenu() { $('sleepMenu').classList.add('hidden'); clearTimeout(openSleepMenu.t); }
+$('bTimer').onclick = e => { e.stopPropagation(); openSleepMenu($('bTimer')); };
+$('powerknob').onclick = e => { e.stopPropagation(); openSleepMenu($('powerknob')); };
+document.addEventListener('pointerdown', e => { if (!e.target.closest('#sleepMenu, #bTimer, #powerknob')) closeSleepMenu(); }, true);
+setInterval(() => { if (sleepAt && Date.now() > sleepAt) { sleepAt = 0; sleepMin = 0; document.documentElement.dataset.sleep = ''; $('bTimer').classList.remove('on'); if (isPlaying()) P.pause(); toast('Sleep timer: good night'); } }, 5000);
 
 /* ---------- tonearm: drag it across the record to jump within the song, or back to its rest to stop ---------- */
 {
@@ -596,7 +611,7 @@ function showControls() { $('controls').classList.remove('hidden'); document.bod
 function hideControlsSoon(now) { clearTimeout(hideTimer); hideTimer = setTimeout(() => { $('controls').classList.add('hidden'); document.body.classList.remove('ctl'); }, now ? 0 : 6000); }
 $('stage').addEventListener('click', e => {
   if (!$('skinSheet').classList.contains('hidden')) return closeSkins();
-  if (e.target.closest('#ctl, #pitch, #tonearm, #vfd, #powerknob') || S.dragging) return;
+  if (e.target.closest('#ctl, #pitch, #tonearm, #vfd, #powerknob, #antiskate, #sleepMenu') || S.dragging) return;
   if (e.target.closest('#platter')) { if (!S.track && !store.get('last')) openSheet(); else togglePlay(); showControls(); }
   else if ($('controls').classList.contains('hidden')) showControls(); else hideControlsSoon(true);
 });
@@ -641,8 +656,11 @@ $('bShuffle').onclick = async () => {
 $('bNight').onclick = () => { document.body.classList.toggle('night'); $('bNight').classList.toggle('on', document.body.classList.contains('night')); store.set('night', document.body.classList.contains('night')); };
 if (store.get('night')) { document.body.classList.add('night'); $('bNight').classList.add('on'); }
 $('bDust').classList.toggle('on', Sound.on);
-$('bDust').onclick = () => { Sound.on = !Sound.on; store.set('crackle', Sound.on); $('bDust').classList.toggle('on', Sound.on); Sound.init(); Sound.update(isPlaying());
+const showCrackle = () => { $('bDust').classList.toggle('on', Sound.on); document.documentElement.dataset.crackle = Sound.on ? 'on' : 'off'; };
+const toggleCrackle = () => { Sound.on = !Sound.on; store.set('crackle', Sound.on); showCrackle(); Sound.init(); Sound.update(isPlaying());
   toast(Sound.on ? 'Vinyl crackle on' : 'Vinyl crackle off'); };
+$('bDust').onclick = toggleCrackle; showCrackle();
+$('antiskate').onclick = e => { e.stopPropagation(); toggleCrackle(); };
 if (IS_IOS) $('vol').style.display = 'none'; // iOS ignores web volume; use the iPad volume buttons
 $('vol').value = store.get('vol') ?? 70;
 $('vol').oninput = e => { store.set('vol', +e.target.value); S.player && S.player.setVolume(e.target.value / 100); window.vdpShowVol && window.vdpShowVol(+e.target.value); };
@@ -781,6 +799,7 @@ function demo() {
   if (mode === 'swap') setTimeout(() => demoSkip(1), 6500);
   if (mode === 'sheet') openSheet();
   if (mode === 'skins') openSkins();
+  if (mode === 'sleep') setTimeout(() => openSleepMenu($('powerknob')), 500);
   if (mode === 'search') { tab = 'search'; searchQ = 'ee'; openSheet(); }
 }
 init();
