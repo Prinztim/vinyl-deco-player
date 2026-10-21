@@ -163,7 +163,11 @@ function armAngleForRadius(r) { // arm angle (deg) whose stylus lands on groove 
   }
   return 60;
 }
-const ARM_OUT = armAngleForRadius(27.5), ARM_IN = armAngleForRadius(12.5);
+let ARM_OUT = armAngleForRadius(27.5), ARM_IN = armAngleForRadius(12.5);
+function recalcArm() { // some skins draw a smaller platter (--pscale); the groove radii shrink with it
+  const k = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pscale')) || 1;
+  ARM_OUT = armAngleForRadius(27.5 * k); ARM_IN = armAngleForRadius(12.5 * k);
+}
 let armDeg = ARM.rest;
 const setArm = deg => { armDeg = deg; $('tonearm').style.setProperty('--arm', deg + 'deg'); };
 { // park the arm rest under the tube at its resting angle
@@ -226,6 +230,26 @@ function showTrack(t) { // title and artist text
     np.style.opacity = 1;
   }, 350);
 }
+function coverColour(img) { // main colour of the cover: weighted by how colourful each pixel is; grey covers give grey
+  const N = 24, c = document.createElement('canvas'); c.width = c.height = N;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0, N, N);
+  const d = x.getImageData(0, 0, N, N).data, bins = Array.from({ length: 12 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
+  let lum = 0, satSum = 0, n = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    const l = (mx + mn) / 2, sat = mx === mn ? 0 : (mx - mn) / (255 - Math.abs(mx + mn - 255) || 1);
+    lum += l; satSum += sat; n++;
+    if (sat < .25 || mx < 45 || mn > 235) continue; // greys, near-black and near-white do not vote for a colour
+    let h = mx === r ? (g - b) / (mx - mn) : mx === g ? 2 + (b - r) / (mx - mn) : 4 + (r - g) / (mx - mn);
+    h = ((h * 60) + 360) % 360; const bin = bins[Math.floor(h / 30) % 12], w = sat * sat;
+    bin.w += w; bin.r += r * w; bin.g += g * w; bin.b += b * w;
+  }
+  const best = bins.reduce((a, b) => b.w > a.w ? b : a);
+  if (best.w < n * .02) { const g = Math.round(Math.max(55, Math.min(175, lum / n))); return [g, g, g + 4].join(','); } // no real colour: grey
+  let rgb = [best.r, best.g, best.b].map(v => v / best.w);
+  const mx = Math.max(...rgb), f = mx < 150 ? 150 / mx : mx > 215 ? 215 / mx : 1; // even brightness so dark covers still read
+  return rgb.map(v => Math.round(Math.min(255, v * f))).join(',');
+}
 function ambientFrom(img) { // tint the room with the album's dominant colour
   try {
     const c = document.createElement('canvas'); c.width = c.height = 8;
@@ -233,6 +257,7 @@ function ambientFrom(img) { // tint the room with the album's dominant colour
     const d = x.getImageData(0, 0, 8, 8).data; let r = 0, g = 0, b = 0, n = 0;
     for (let i = 0; i < d.length; i += 4) { if (Math.max(d[i], d[i + 1], d[i + 2]) > 40) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; } }
     if (n) document.documentElement.style.setProperty('--amb', [r, g, b].map(v => Math.min(255, Math.round(v / n * 1.25))).join(','));
+    document.documentElement.style.setProperty('--cover', coverColour(img));
   } catch { /* cross-origin image: keep the warm default */ }
 }
 
@@ -541,7 +566,7 @@ function showControls() { $('controls').classList.remove('hidden'); document.bod
 function hideControlsSoon(now) { clearTimeout(hideTimer); hideTimer = setTimeout(() => { $('controls').classList.add('hidden'); document.body.classList.remove('ctl'); }, now ? 0 : 6000); }
 $('stage').addEventListener('click', e => {
   if (!$('skinSheet').classList.contains('hidden')) return closeSkins();
-  if (e.target.closest('#ctl, #pitch, #tonearm, #vfd') || S.dragging) return;
+  if (e.target.closest('#ctl, #pitch, #tonearm, #vfd, #powerknob') || S.dragging) return;
   if (e.target.closest('#platter')) { if (!S.track && !store.get('last')) openSheet(); else togglePlay(); showControls(); }
   else if ($('controls').classList.contains('hidden')) showControls(); else hideControlsSoon(true);
 });
@@ -559,10 +584,11 @@ $('startstop').onclick = togglePlay;
 let rpmBase = 1, rpmPitch = 1;
 const setRpm = () => { rpmFactor = rpmBase * rpmPitch; };
 document.querySelectorAll('.pbtn[data-spd]').forEach(b => b.onclick = () => {
-  rpmBase = b.dataset.spd === '45' ? 1.36 : 1; setRpm(); flashVfd(b.dataset.spd + ' RPM');
+  rpmBase = b.dataset.spd === '45' ? 1.36 : 1; setRpm(); flashVfd(b.dataset.spd + ' RPM'); document.documentElement.dataset.rpm = b.dataset.spd;
   document.querySelectorAll('.pbtn[data-spd]').forEach(x => x.classList.toggle('on', x === b));
 });
-$('spd33').classList.add('on');
+$('spd33').classList.add('on'); document.documentElement.dataset.rpm = '33';
+$('powerknob').addEventListener('click', e => { e.stopPropagation(); (document.documentElement.dataset.rpm === '45' ? $('spd33') : $('spd45')).click(); });
 { const slot = document.querySelector('#pitch .slot'), fader = document.querySelector('#pitch .fader');
   const move = e => { const r = slot.getBoundingClientRect(), f = clamp((e.clientY - r.top) / r.height, 0, 1);
     fader.style.top = (f * 100) + '%'; fader.style.marginTop = 'calc(var(--u) * -1.2)';
@@ -603,6 +629,7 @@ function applySkin(id) {
   document.documentElement.dataset.skin = k.id;
   $('badge').querySelector('b').textContent = k.badge[0]; $('badge').querySelector('span').textContent = k.badge[1];
   $('silkDrive').textContent = k.drive;
+  recalcArm(); if (typeof renderArm === 'function') renderArm();
   document.querySelector('meta[name=theme-color]').content = k.room;
   document.querySelectorAll('#skinList .skin').forEach(c => c.classList.toggle('on', c.dataset.id === k.id));
   return k;
