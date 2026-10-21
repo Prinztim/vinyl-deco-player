@@ -280,6 +280,19 @@ function loadArt(t) {
     img.src = t.art; setTimeout(res, 1800);
   });
 }
+const HOUSE_LABEL = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'>
+<defs><radialGradient id='p' cx='.45' cy='.4'><stop offset='0' stop-color='#f6eedb'/><stop offset='1' stop-color='#e2d3b2'/></radialGradient>
+<path id='a' d='M150 150 m-112 0 a112 112 0 1 1 224 0'/><path id='b' d='M150 150 m-122 0 a122 122 0 0 0 244 0'/></defs>
+<rect width='300' height='300' fill='url(#p)'/>
+<circle cx='150' cy='150' r='138' fill='none' stroke='#8a2b1c' stroke-width='10'/><circle cx='150' cy='150' r='128' fill='none' stroke='#8a2b1c' stroke-width='1.5'/>
+<text font-family='Georgia,serif' font-size='21' letter-spacing='9' fill='#4a2a14'><textPath href='#a' startOffset='50%' text-anchor='middle'>ARCHIVE RECORDS</textPath></text>
+<text font-family='Georgia,serif' font-size='13' letter-spacing='6' fill='#8a2b1c'><textPath href='#b' startOffset='50%' text-anchor='middle'>STEREO · 33⅓ RPM</textPath></text>
+<path d='M96 192 h108' stroke='#4a2a14' stroke-width='1'/><text x='150' y='214' font-family='Georgia,serif' font-size='12' letter-spacing='3' text-anchor='middle' fill='#4a2a14'>SIDE A</text>
+<path d='M110 105 q40 -26 80 0' fill='none' stroke='#8a2b1c' stroke-width='3'/></svg>`);
+function houseRecord() { // shown until the first song arrives
+  const img = $('art'); img.crossOrigin = 'anonymous'; img.src = HOUSE_LABEL;
+  $('disc').classList.remove('off'); S.onPlatter = true; S.lastOn = null;
+}
 async function swapRecord(track, resume) {
   S.queued = track; S.resumeWanted = S.resumeWanted || resume;
   if (S.swapping) return; // a swap is running; it will pick up the newest record
@@ -708,7 +721,8 @@ function startPlayer() {
 
 async function init() {
   setArm(ARM.rest); showTrack(null); renderVfd(); $('disc').classList.add('off');
-  if (DEMO) return demo();
+  if (DEMO && new URLSearchParams(location.search).get('demo') !== 'idle') return demo();
+  houseRecord(); if (DEMO) return;
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch {} // ask the browser not to evict our storage
   const code = new URLSearchParams(location.search).get('code');
   if (code) {

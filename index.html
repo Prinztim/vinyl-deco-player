@@ -110,6 +110,7 @@
           <linearGradient id="gg" x1="0" x2="1"><stop offset="0" style="stop-color:var(--cart-lo)"/><stop offset=".45" style="stop-color:var(--cart)"/><stop offset="1" style="stop-color:var(--cart-lo)"/></linearGradient>
         </defs>
         <!-- counterweight: stem, turned cylinder with grooves, end cap, accent band and scale ticks -->
+        <g class="cw">
         <rect x="-.55" y="-5" width="1.1" height="2" style="fill:url(#gm)"/>
         <rect x="-2.75" y="-11.7" width="5.5" height="7.2" rx=".9" fill="url(#gw)"/>
         <rect x="-2.75" y="-11.7" width="5.5" height=".95" rx=".6" style="fill:rgba(0,0,0,.4)"/>
@@ -118,6 +119,7 @@
         <rect x="-2.75" y="-6.9" width="5.5" height=".85" style="fill:var(--w-band)"/>
         <g style="fill:var(--w-tick)"><rect x="-2.3" y="-5.9" width=".14" height=".9"/><rect x="-1.55" y="-5.9" width=".14" height=".9"/><rect x="-.8" y="-5.9" width=".14" height=".9"/><rect x="-.07" y="-5.9" width=".14" height=".9"/><rect x=".66" y="-5.9" width=".14" height=".9"/><rect x="1.41" y="-5.9" width=".14" height=".9"/><rect x="2.16" y="-5.9" width=".14" height=".9"/></g>
         <circle cx="0" cy="-10.5" r=".38" style="fill:rgba(0,0,0,.55)"/>
+        </g>
         <path class="hit" d="M0 -6 L0 12 C0 21 3.2 23 3.2 31 L3.2 42" fill="none" stroke="transparent" stroke-width="5" pointer-events="stroke"/>
         <g class="arm-s">
           <path d="M0 -4 L0 12 C0 21 3.2 23 3.2 31 L3.2 35.5" fill="none" style="stroke:var(--t-lo)" stroke-width="1.5" stroke-linecap="round"/>
@@ -125,6 +127,13 @@
           <path d="M-.2 -4 L-.2 12 C-.2 21 3 23 3 31 L3 35.5" fill="none" style="stroke:var(--t-hi)" stroke-width=".3" stroke-linecap="round" opacity=".9"/>
           <rect x="-1" y="2.4" width="2" height=".7" rx=".25" style="fill:url(#gm)"/><rect x="-1" y="6.2" width="2" height=".4" rx=".2" style="fill:url(#gm)"/>
           <rect x="2.2" y="30" width="2" height=".45" rx=".2" style="fill:url(#gm)"/>
+        </g>
+        <g class="arm-j">
+          <path d="M0 -4 L.35 20 C.7 29 3.2 29.5 3.2 35.5" fill="none" style="stroke:var(--t-lo)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M0 -4 L.35 20 C.7 29 3.2 29.5 3.2 35.5" fill="none" style="stroke:var(--t-mid)" stroke-width="1.05" stroke-linecap="round"/>
+          <path d="M-.25 -4 L.1 20 C.45 29 2.95 29.5 2.95 35.5" fill="none" style="stroke:var(--t-hi)" stroke-width=".3" stroke-linecap="round" opacity=".9"/>
+          <rect x="-.6" y="3" width="2" height=".8" rx=".3" style="fill:url(#gm)"/>
+          <rect x="2.2" y="31.6" width="2" height=".5" rx=".2" style="fill:url(#gm)"/>
         </g>
         <g class="arm-x">
           <path d="M0 -4 L2.75 31 Q3.2 33.2 3.2 35.5" fill="none" style="stroke:var(--t-lo)" stroke-width="1.5" stroke-linecap="round"/>
@@ -134,6 +143,7 @@
           <rect x="2.2" y="30" width="2" height=".45" rx=".2" style="fill:url(#gm)"/>
         </g>
         <!-- headshell, cartridge, stylus, finger lift -->
+        <g class="hs">
         <path d="M1.9 35 L4.5 35 L5.1 41.8 L1.3 41.8 Z" fill="url(#gh)"/>
         <path d="M2.3 36 L4.1 36 L4.5 41.2 L1.9 41.2 Z" style="fill:rgba(255,255,255,.07)"/>
         <rect x="2.05" y="37.3" width="2.4" height="3.9" rx=".3" fill="url(#gg)"/>
@@ -142,6 +152,7 @@
         <rect x="1.7" y="35.8" width=".55" height=".55" style="fill:var(--a-mid)"/><rect x="4.1" y="35.8" width=".55" height=".55" style="fill:var(--a-mid)"/>
         <path d="M2.9 41.2 L3.6 41.2 L3.25 42.6 Z" style="fill:#d4d4d4"/>
         <circle class="tip" cx="3.25" cy="42.4" r=".55"/>
+        </g>
         <path class="lift" d="M4.9 38.2 Q8.3 38.6 8.6 36" fill="none" style="stroke:var(--t-mid)" stroke-width=".5" stroke-linecap="round"/>
         <circle class="lift" cx="8.6" cy="35.9" r=".42" style="fill:var(--t-mid)"/>
         <!-- pivot -->
