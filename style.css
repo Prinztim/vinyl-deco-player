@@ -475,3 +475,9 @@ html[data-sleep="on"] #powerknob { filter: drop-shadow(0 0 calc(var(--u) * .8) r
 #sleepMenu button { display: block; width: 100%; height: 40px; padding: 0 14px; border-radius: 10px; text-align: left; font-size: 15px; color: #efe3cf; }
 #sleepMenu button:active { background: rgba(255,255,255,.12); }
 #sleepMenu button.on { background: rgba(255,176,56,.16); color: #ffb038; }
+
+/* crackle dial: pointer to the left = on, to the right = off */
+#antiskate .dial { transform: rotate(55deg); }
+html[data-crackle="on"] #antiskate .dial { transform: rotate(-125deg); }
+#sleepMenu .left { padding: 0 12px 8px; font-size: 20px; font-variant-numeric: tabular-nums; color: rgba(233,223,207,.45); }
+#sleepMenu .left.run { color: #ffb038; }

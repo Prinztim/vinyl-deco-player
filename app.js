@@ -562,17 +562,23 @@ function setSleep(m) {
 function openSleepMenu(anchor) { // small drop-down next to the knob or button that was pressed
   const menu = $('sleepMenu');
   if (!menu.classList.contains('hidden') && menu.dataset.for === anchor.id) return closeSleepMenu();
-  menu.innerHTML = '<div class="mh">Sleep timer</div>' + [[15, '15 minutes'], [30, '30 minutes'], [45, '45 minutes'], [60, '60 minutes'], [0, 'Off']]
+  menu.innerHTML = '<div class="mh">Sleep timer</div><div class="left" id="sleepLeft"></div>' + [[15, '15 minutes'], [30, '30 minutes'], [45, '45 minutes'], [60, '60 minutes'], [0, 'Off']]
     .map(([m, t]) => `<button data-m="${m}" class="${m === sleepMin ? 'on' : ''}">${t}</button>`).join('');
   menu.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); setSleep(+b.dataset.m); closeSleepMenu(); });
-  menu.dataset.for = anchor.id; menu.classList.remove('hidden');
+  menu.dataset.for = anchor.id; menu.classList.remove('hidden'); tickSleepLeft(); clearInterval(openSleepMenu.i); openSleepMenu.i = setInterval(tickSleepLeft, 1000);
   const r = anchor.getBoundingClientRect(), w = menu.offsetWidth, h = menu.offsetHeight;
   const below = r.bottom + h + 12 < innerHeight;
   menu.style.left = clamp(r.left + r.width / 2 - w / 2, 8, innerWidth - w - 8) + 'px';
   menu.style.top = (below ? r.bottom + 8 : Math.max(8, r.top - h - 8)) + 'px';
-  clearTimeout(openSleepMenu.t); openSleepMenu.t = setTimeout(closeSleepMenu, 8000);
+  clearTimeout(openSleepMenu.t); openSleepMenu.t = setTimeout(closeSleepMenu, 15000);
 }
-function closeSleepMenu() { $('sleepMenu').classList.add('hidden'); clearTimeout(openSleepMenu.t); }
+function tickSleepLeft() { // live countdown inside the menu
+  const el = $('sleepLeft'); if (!el) return;
+  if (!sleepAt) { el.textContent = 'No timer set'; el.classList.remove('run'); return; }
+  const sec = Math.max(0, Math.round((sleepAt - Date.now()) / 1000));
+  el.textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0') + ' left'; el.classList.add('run');
+}
+function closeSleepMenu() { $('sleepMenu').classList.add('hidden'); clearTimeout(openSleepMenu.t); clearInterval(openSleepMenu.i); }
 $('bTimer').onclick = e => { e.stopPropagation(); openSleepMenu($('bTimer')); };
 $('powerknob').onclick = e => { e.stopPropagation(); openSleepMenu($('powerknob')); };
 document.addEventListener('pointerdown', e => { if (!e.target.closest('#sleepMenu, #bTimer, #powerknob')) closeSleepMenu(); }, true);
