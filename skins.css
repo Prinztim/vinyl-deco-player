@@ -717,3 +717,33 @@ html[data-disc="cover"] { --rec-bg: radial-gradient(circle, rgba(255,255,255,.1)
 [data-skin="marble"] #antiskate .dial { box-shadow: 0 calc(var(--u) * .4) calc(var(--u) * .8) rgba(60,45,20,.5), 0 0 0 calc(var(--u) * .25) #c9a64f, 0 0 0 calc(var(--u) * .45) rgba(255,255,255,.8); }
 /* deeper veins: second vein layer in warm gold, softer cloud */
 [data-skin="marble"] #plinth::before { background: linear-gradient(115deg, rgba(255,255,255,.5), transparent 38%, rgba(255,255,255,.22) 70%, transparent), radial-gradient(ellipse 50% 40% at 80% 85%, rgba(201,166,79,.1), transparent 70%); }
+
+
+/* =====================================================================
+   v15: clipping fixes (parts no longer touch frame lines, corners or each other)
+   ===================================================================== */
+/* power knob: kept clear of the inlay line / frame in every skin */
+[data-skin="teak"] #powerknob { left: calc(var(--u) * 5.2); top: calc(var(--u) * 9); }
+[data-skin="teak"] #led { left: calc(var(--u) * 7.8); top: calc(var(--u) * 19.2); }
+[data-skin="teak"] #pitch { left: calc(var(--u) * 5); top: calc(var(--u) * 26); }
+[data-skin="acrylic"] #powerknob { left: calc(var(--u) * 5.4); top: calc(var(--u) * 9.4); }
+[data-skin="acrylic"] #led { left: calc(var(--u) * 8); top: calc(var(--u) * 5.4); }
+[data-skin="acrylic"] #deco .d1, [data-skin="acrylic"] #deco .d2 { display: none; }   /* thin inner frame lines ran through the knob, name plate and standoffs */
+[data-skin="acrylic"] #badge { left: calc(var(--u) * 5); bottom: calc(var(--u) * 7); }
+[data-skin="acrylic"] #vfd { left: calc(var(--u) * 5); }
+[data-skin="acrylic"] #pitch { left: calc(var(--u) * 5); }
+[data-skin="acrylic"] #silkDrive { bottom: calc(var(--u) * 2.9); }
+[data-skin="deco"] #powerknob { left: calc(var(--u) * 6.2); top: calc(var(--u) * 10); }
+[data-skin="deco"] #led { left: calc(var(--u) * 9.6); top: calc(var(--u) * 5.8); }
+[data-skin="deco"] #pitch { left: calc(var(--u) * 5.4); }
+[data-skin="deco"] #vfd { left: calc(var(--u) * 5.2); }
+[data-skin="deco"] #badge { left: calc(var(--u) * 5.2); bottom: calc(var(--u) * 7); }
+/* DJ: range keys and red status bar moved off the frame edge and the screws */
+[data-skin="dj"] #deco .d5 { top: calc(var(--u) * 3.4); }
+[data-skin="dj"] #deco .d6 { top: calc(var(--u) * 2.3); }
+[data-skin="dj"] #deco .d4 { left: calc(var(--u) * 5.2); width: calc(var(--u) * 8.6); bottom: calc(var(--u) * 3.4); }
+[data-skin="dj"] #badge { bottom: calc(var(--u) * 6.2); }
+[data-skin="acrylic"] #silkDrive { bottom: calc(var(--u) * 1.3); }
+[data-skin="acrylic"] #deco .d6 { bottom: calc(var(--u) * 3.2); }
+[data-skin="acrylic"] #deco .d6 { right: calc(var(--u) * 22); left: calc(var(--u) * 6); bottom: calc(var(--u) * 2.6); }
+[data-skin="acrylic"] #silkDrive { bottom: calc(var(--u) * 1.1); }

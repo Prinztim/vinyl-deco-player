@@ -610,13 +610,17 @@ document.querySelectorAll('.pbtn[data-spd]').forEach(b => b.onclick = () => {
   document.querySelectorAll('.pbtn[data-spd]').forEach(x => x.classList.toggle('on', x === b));
 });
 $('spd33').classList.add('on'); document.documentElement.dataset.rpm = '33';
-{ const slot = document.querySelector('#pitch .slot'), fader = document.querySelector('#pitch .fader');
-  const move = e => { const r = slot.getBoundingClientRect(), f = clamp((e.clientY - r.top) / r.height, 0, 1);
-    fader.style.top = (f * 100) + '%'; fader.style.marginTop = 'calc(var(--u) * -1.2)';
-    rpmPitch = 1.08 - f * 0.16; setRpm(); const p = (rpmPitch - 1) * 100; flashVfd((p >= 0 ? '+' : '') + p.toFixed(1) + '%', 1200); };
+{ // the long fader is the volume control (it used to change the record speed, which nobody could hear)
+  const slot = document.querySelector('#pitch .slot'), fader = document.querySelector('#pitch .fader'); let told = false;
+  const show = v => { fader.style.top = ((1 - v / 100) * 100) + '%'; fader.style.marginTop = 'calc(var(--u) * -1.2)'; };
+  const setVol = v => { v = Math.round(clamp(v, 0, 100)); store.set('vol', v); $('vol').value = v; show(v); S.player && S.player.setVolume(v / 100);
+    flashVfd('VOL ' + String(v).padStart(3, ' '), 1200);
+    if (IS_IOS && !told) { told = true; toast('On the iPad the volume is set with the iPad volume buttons'); } };
+  const move = e => { const r = slot.getBoundingClientRect(); setVol((1 - clamp((e.clientY - r.top) / r.height, 0, 1)) * 100); };
+  show(store.get('vol') ?? 70);
   slot.parentElement.addEventListener('pointerdown', e => { e.stopPropagation(); slot.setPointerCapture?.(e.pointerId); move(e); slot.onpointermove = move; });
   slot.parentElement.addEventListener('pointerup', () => { slot.onpointermove = null; });
-  slot.parentElement.addEventListener('dblclick', () => { fader.style.top = ''; fader.style.marginTop = ''; rpmPitch = 1; setRpm(); flashVfd('+0.0%'); }); }
+  window.vdpShowVol = show; }
 
 $('bPlay').onclick = togglePlay; $('bNext').onclick = next; $('bPrev').onclick = prev;
 $('bPlaylists').onclick = openSheet; $('sheetClose').onclick = () => $('sheet').classList.add('hidden');
@@ -633,7 +637,7 @@ $('bDust').onclick = () => { Sound.on = !Sound.on; store.set('crackle', Sound.on
   toast(Sound.on ? 'Vinyl crackle on' : 'Vinyl crackle off'); };
 if (IS_IOS) $('vol').style.display = 'none'; // iOS ignores web volume; use the iPad volume buttons
 $('vol').value = store.get('vol') ?? 70;
-$('vol').oninput = e => { store.set('vol', +e.target.value); S.player && S.player.setVolume(e.target.value / 100); };
+$('vol').oninput = e => { store.set('vol', +e.target.value); S.player && S.player.setVolume(e.target.value / 100); window.vdpShowVol && window.vdpShowVol(+e.target.value); };
 
 /* ---------- turntable skins: same player, different cabinet (looks live in skins.css) ---------- */
 const SKINS = [
