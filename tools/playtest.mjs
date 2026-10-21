@@ -106,23 +106,39 @@ sp = await ev("({ a: window.__body, b: window.__body2 })");
 check('6d search song plays inside its album, with a fallback to the single song', sp.a.context_uri === 'spotify:album:a1' && sp.a.offset.uri === 'spotify:track:t5' && sp.b.uris[0] === 'spotify:track:t6', JSON.stringify(sp));
 
 // 6e. the top-left knob opens a sleep timer menu (15/30/45/60/Off); the crackle dial toggles the crackle; the bottom bar timer opens the same menu
-await ev("document.getElementById('powerknob').click()"); await sleep(200);
+await ev("document.getElementById('bTimer').click()"); await sleep(200);
 let m1 = await ev("({ open: !document.getElementById('sleepMenu').classList.contains('hidden'), items: [...document.querySelectorAll('#sleepMenu button')].map(b => b.dataset.m).join() })");
-check('6e knob opens the sleep menu with 15, 30, 45, 60, Off', m1.open && m1.items === '15,30,45,60,0', JSON.stringify(m1));
+check('6e timer button opens the sleep menu with 15, 30, 45, 60, Off', m1.open && m1.items === '15,30,45,60,0', JSON.stringify(m1));
 await ev("document.querySelector('#sleepMenu button[data-m=\"45\"]').click()"); await sleep(200);
-await ev("document.getElementById('powerknob').click()"); await sleep(300);
+await ev("document.getElementById('bTimer').click()"); await sleep(300);
 let lt = await ev("document.getElementById('sleepLeft').textContent");
 check('6e the open menu shows the time left', /^4[45]:\d\d left$/.test(lt), lt);
-await ev("document.getElementById('powerknob').click()"); await sleep(100);
+await ev("document.getElementById('bTimer').click()"); await sleep(100);
 m1 = await ev("({ min: sleepMin, left: Math.round((sleepAt - Date.now()) / 60000), closed: document.getElementById('sleepMenu').classList.contains('hidden') })");
 check('6e choosing 45 sets the timer and closes the menu', m1.min === 45 && m1.left >= 44 && m1.closed, JSON.stringify(m1));
 await ev("document.getElementById('bTimer').click()"); await sleep(200);
 m1 = await ev("({ open: !document.getElementById('sleepMenu').classList.contains('hidden') })");
 check('6e the bottom bar timer button opens the menu too (no cycling)', m1.open && (await ev('sleepMin')) === 45, JSON.stringify(m1));
 await ev("document.querySelector('#sleepMenu button[data-m=\"0\"]').click()");
-let c0 = await ev("Sound.on"); await ev("document.getElementById('antiskate').click()"); let c1 = await ev("({ on: Sound.on, attr: document.documentElement.dataset.crackle })");
-check('6e the dial toggles the crackle', c1.on === !c0 && c1.attr === (c1.on ? 'on' : 'off'), JSON.stringify(c1));
-await ev("document.getElementById('antiskate').click()");
+let c0 = await ev("Sound.on"); await ev("document.getElementById('powerknob').click()"); let c1 = await ev("({ on: Sound.on, attr: document.documentElement.dataset.crackle })");
+check('6e the top-left knob toggles the crackle (and its lamp)', c1.on === !c0 && c1.attr === (c1.on ? 'on' : 'off'), JSON.stringify(c1));
+await ev("document.getElementById('powerknob').click()");
+
+// 6f. tap on the parked arm continues the song; dragging the record off with the mouse skips to the next song
+const mouse = (type, x, y) => send('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons: type === 'mouseReleased' ? 0 : 1, clickCount: 1 });
+await ev("FP.inst.log = []; FP.inst.cur = 30; FP.inst.position = 5000; FP.inst.paused = false; FP.inst.emit()"); await sleep(9500);
+await ev("P.pause()"); await sleep(600);
+let pt = await ev("(() => { const r = document.querySelector('#tonearm rect[fill=\"url(#gg)\"]').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()");
+await mouse('mousePressed', ...pt); await mouse('mouseReleased', ...pt); await sleep(3800);
+s = await state();
+check('6f a tap on the parked arm continues the song', !s.paused && s.track === 't30', JSON.stringify(s));
+await sleep(1500);
+let dp = await ev("(() => { const r = document.getElementById('disc').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width]; })()");
+await mouse('mousePressed', dp[0], dp[1]);
+for (let i = 1; i <= 8; i++) await mouse('mouseMoved', dp[0] - dp[2] * 0.6 * i / 8, dp[1]);
+await mouse('mouseReleased', dp[0] - dp[2] * 0.6, dp[1]); await sleep(11000);
+s = await state();
+check('6f dragging the record off with the mouse skips to the next song', s.track === 't31' && !s.paused && !s.swapping, JSON.stringify(s));
 
 // 7-10. the login survives: a refused access token is refreshed once and retried, only a revoked refresh token logs out
 const AUTH = (tokenReply, setup = '') => ev(`(async () => {

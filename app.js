@@ -313,7 +313,7 @@ async function swapRecord(track, resume) {
       await flight([{ transform: 'none', filter: 'none' },
         { transform: 'scale(1.07)', filter: LIFT, offset: .3 },
         { transform: 'translate(-168%, -8%) rotate(-12deg) scale(1.07)', filter: LIFT }], 950, 'cubic-bezier(.55,0,.75,.45)');
-      S.onPlatter = false; $('disc').classList.add('off'); stash(S.lastOn);
+      S.onPlatter = false; $('disc').classList.add('off'); $('disc').style.translate = ''; stash(S.lastOn);
       if (S.queued) continue; // skipped again while lifting: go straight to the newest record
     }
     await loadArt(t);
@@ -580,8 +580,7 @@ function tickSleepLeft() { // live countdown inside the menu
 }
 function closeSleepMenu() { $('sleepMenu').classList.add('hidden'); clearTimeout(openSleepMenu.t); clearInterval(openSleepMenu.i); }
 $('bTimer').onclick = e => { e.stopPropagation(); openSleepMenu($('bTimer')); };
-$('powerknob').onclick = e => { e.stopPropagation(); openSleepMenu($('powerknob')); };
-document.addEventListener('pointerdown', e => { if (!e.target.closest('#sleepMenu, #bTimer, #powerknob')) closeSleepMenu(); }, true);
+document.addEventListener('pointerdown', e => { if (!e.target.closest('#sleepMenu, #bTimer')) closeSleepMenu(); }, true);
 setInterval(() => { if (sleepAt && Date.now() > sleepAt) { sleepAt = 0; sleepMin = 0; document.documentElement.dataset.sleep = ''; $('bTimer').classList.remove('on'); if (isPlaying()) P.pause(); toast('Sleep timer: good night'); } }, 5000);
 
 /* ---------- tonearm: drag it across the record to jump within the song, or back to its rest to stop ---------- */
@@ -589,11 +588,11 @@ setInterval(() => { if (sleepAt && Date.now() > sleepAt) { sleepAt = 0; sleepMin
   const arm = $('tonearm'), V_ANG = Math.atan2(ARM.V[1], ARM.V[0]) * 180 / Math.PI;
   const angleAt = e => { const r = $('armbase').getBoundingClientRect();
     return clamp(Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI - V_ANG, ARM.rest, ARM_IN + 1); };
-  let grabbed = false;
+  let grabbed = false, tap = null;
   arm.addEventListener('pointerdown', e => {
     if (S.swapping || S.cueing || !S.track) return;
-    e.stopPropagation(); e.preventDefault(); grabbed = true; S.dragging = true;
-    arm.classList.add('drag'); arm.setPointerCapture(e.pointerId); setArm(angleAt(e));
+    e.stopPropagation(); e.preventDefault(); grabbed = true; S.dragging = true; tap = { x: e.clientX, y: e.clientY, was: isPlaying() };
+    arm.classList.add('drag'); try { arm.setPointerCapture(e.pointerId); } catch {} setArm(angleAt(e));
   });
   arm.addEventListener('pointermove', e => {
     if (!grabbed) return; const a = angleAt(e); setArm(a);
@@ -601,6 +600,8 @@ setInterval(() => { if (sleepAt && Date.now() > sleepAt) { sleepAt = 0; sleepMin
   });
   const release = async e => {
     if (!grabbed) return; grabbed = false; arm.classList.remove('drag');
+    if (tap && !tap.was && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 6) { // just a tap on the parked arm: continue where it stopped
+      S.dragging = false; renderPlaying(); togglePlay(); return; }
     const a = angleAt(e);
     if (a > ARM_OUT - 1.5) { // dropped on the record: jump there and play
       const ms = clamp((a - ARM_OUT) / (ARM_IN - ARM_OUT), 0, 1) * S.dur;
@@ -611,13 +612,33 @@ setInterval(() => { if (sleepAt && Date.now() > sleepAt) { sleepAt = 0; sleepMin
   arm.addEventListener('pointerup', release); arm.addEventListener('pointercancel', release);
 }
 
+/* mouse: hold the record and drag it off the platter to skip to the next song */
+{ const disc = $('disc'), plat = $('platter'); let st = null;
+  plat.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.button !== 0 || !S.onPlatter || S.swapping || S.cueing || !e.target.closest('#disc, #spindle')) return;
+    st = { x: e.clientX, y: e.clientY, moved: false }; try { plat.setPointerCapture(e.pointerId); } catch {}
+  });
+  plat.addEventListener('pointermove', e => {
+    if (!st) return; const dx = e.clientX - st.x, dy = e.clientY - st.y;
+    if (!st.moved && Math.hypot(dx, dy) < 8) return;
+    st.moved = true; disc.classList.add('held'); disc.style.translate = dx + 'px ' + dy + 'px';
+  });
+  const end = e => {
+    if (!st) return; const dx = e.clientX - st.x, dy = e.clientY - st.y, moved = st.moved; st = null; disc.classList.remove('held');
+    if (!moved) return;
+    S.recDragged = true; setTimeout(() => { S.recDragged = false; }, 120);
+    if (Math.hypot(dx, dy) > disc.getBoundingClientRect().width * .3) { toast('Next song'); next(); } // swapRecord lifts the record from where it was dropped
+    else { disc.style.transition = 'translate .25s ease'; disc.style.translate = ''; setTimeout(() => { disc.style.transition = ''; }, 300); }
+  };
+  plat.addEventListener('pointerup', end); plat.addEventListener('pointercancel', end); }
+
 /* ---------- controls: tap background to show, tap record to play, swipe for next/prev ---------- */
 let hideTimer;
 function showControls() { $('controls').classList.remove('hidden'); document.body.classList.add('ctl'); hideControlsSoon(); }
 function hideControlsSoon(now) { clearTimeout(hideTimer); hideTimer = setTimeout(() => { $('controls').classList.add('hidden'); document.body.classList.remove('ctl'); }, now ? 0 : 6000); }
 $('stage').addEventListener('click', e => {
   if (!$('skinSheet').classList.contains('hidden')) return closeSkins();
-  if (e.target.closest('#ctl, #pitch, #tonearm, #vfd, #powerknob, #antiskate, #sleepMenu') || S.dragging) return;
+  if (e.target.closest('#ctl, #pitch, #tonearm, #vfd, #powerknob, #sleepMenu') || S.dragging || S.recDragged) return;
   if (e.target.closest('#platter')) { if (!S.track && !store.get('last')) openSheet(); else togglePlay(); showControls(); }
   else if ($('controls').classList.contains('hidden')) showControls(); else hideControlsSoon(true);
 });
@@ -665,8 +686,10 @@ $('bDust').classList.toggle('on', Sound.on);
 const showCrackle = () => { $('bDust').classList.toggle('on', Sound.on); document.documentElement.dataset.crackle = Sound.on ? 'on' : 'off'; };
 const toggleCrackle = () => { Sound.on = !Sound.on; store.set('crackle', Sound.on); showCrackle(); Sound.init(); Sound.update(isPlaying());
   toast(Sound.on ? 'Vinyl crackle on' : 'Vinyl crackle off'); };
-$('bDust').onclick = toggleCrackle; showCrackle();
-$('antiskate').onclick = e => { e.stopPropagation(); toggleCrackle(); };
+$('bDust').onclick = toggleCrackle;
+{ const q = new URLSearchParams(location.search).get('crackle'); if (q) Sound.on = q === 'on'; } // ?crackle=on|off for previews
+showCrackle();
+$('powerknob').onclick = e => { e.stopPropagation(); toggleCrackle(); };
 if (IS_IOS) $('vol').style.display = 'none'; // iOS ignores web volume; use the iPad volume buttons
 $('vol').value = store.get('vol') ?? 70;
 $('vol').oninput = e => { store.set('vol', +e.target.value); S.player && S.player.setVolume(e.target.value / 100); window.vdpShowVol && window.vdpShowVol(+e.target.value); };
