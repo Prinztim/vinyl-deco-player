@@ -13,8 +13,57 @@
 <link rel="icon" type="image/png" href="icons/touch-192-v2.png">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Vinyl Deco Player</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="skins.css">
+<style>html.boot{background:#0d0b09}html.boot body{visibility:hidden}</style>
+<script>
+/* Update loader: asks version.json (never cached) which version is live and loads style.css, skins.css and app.js
+   with ?v=<version>, so a new deploy shows up the next time the app opens or comes back to the front, without
+   re-adding the Home Screen icon. Offline, or from file:// (tools/shot.mjs, tools/playtest.mjs), it uses the last known version. */
+(function () {
+  var d = document, root = d.documentElement, KEY = 'vdp.ver', ONCE = 'vdp.reloadedFor', current = null;
+  function get(s, k) { try { return window[s].getItem(k); } catch (e) { return null; } }
+  function put(s, k, v) { try { window[s].setItem(k, v); return window[s].getItem(k) === v; } catch (e) { return false; } }
+  function latest() {
+    if (location.protocol === 'file:' || !window.fetch) return Promise.resolve(null);
+    var ctl = window.AbortController ? new AbortController() : null, t = setTimeout(function () { if (ctl) ctl.abort(); }, 2500);
+    return fetch('version.json?t=' + Date.now(), { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { clearTimeout(t); return j && j.v ? String(j.v) : null; }, function () { clearTimeout(t); return null; });
+  }
+  function reloadFor(v) { // at most once per version and session, and only after remembering it, so it can never loop
+    if (get('sessionStorage', ONCE) === v || !put('sessionStorage', ONCE, v) || !put('localStorage', KEY, v)) return false;
+    location.reload(); return true;
+  }
+  function load(v) {
+    current = v; if (v) put('localStorage', KEY, v);
+    var q = v ? '?v=' + encodeURIComponent(v) : '', left = 2, started = false;
+    function start() { // as before: app.js runs once the styles are in and the page is parsed
+      if (started) return; started = true;
+      root.className = root.className.replace(/(^|\s)boot(?=\s|$)/g, '');
+      var s = d.createElement('script'); s.src = 'app.js' + q;
+      if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', function () { d.body.appendChild(s); }); else d.body.appendChild(s);
+    }
+    ['style.css', 'skins.css'].forEach(function (f) {
+      var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = f + q;
+      l.onload = l.onerror = function () { if (--left === 0) start(); };
+      d.head.appendChild(l);
+    });
+    setTimeout(start, 4000);
+  }
+  root.className += ' boot';
+  var known = get('localStorage', KEY);
+  latest().then(function (v) {
+    if (v && known && v !== known && reloadFor(v)) return; // new deploy since last time: reload once so index.html is fresh too
+    load(v || known);
+  });
+  d.addEventListener('visibilitychange', function () { // back in front: look for a new deploy
+    if (d.visibilityState !== 'visible') return;
+    latest().then(function (v) {
+      if (!v || v === current || (window.vdpBusy && window.vdpBusy())) return; // never interrupt music or a login refresh
+      reloadFor(v);
+    });
+  });
+})();
+</script>
 </head>
 <body>
 <div id="ambient"></div>
@@ -156,7 +205,5 @@
 
 <div id="toast"></div>
 <div id="dimmer"></div>
-
-<script src="app.js"></script>
 </body>
 </html>

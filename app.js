@@ -18,10 +18,26 @@ function toast(msg, ms = 7000) {
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
 }
-const store = {
+const store = { // the login ('auth') is also mirrored into IndexedDB, in case iOS empties localStorage
   get: k => { try { return JSON.parse(localStorage.getItem('vdp.' + k)); } catch { return null; } },
-  set: (k, v) => localStorage.setItem('vdp.' + k, JSON.stringify(v)),
-  del: k => localStorage.removeItem('vdp.' + k),
+  set: (k, v) => { try { localStorage.setItem('vdp.' + k, JSON.stringify(v)); } finally { if (k === 'auth') authDb.put(v); } },
+  del: k => { try { localStorage.removeItem('vdp.' + k); } finally { if (k === 'auth') authDb.put(null); } },
+};
+const authDb = { // tiny IndexedDB key/value store holding a second copy of the login
+  open() {
+    return this.p || (this.p = new Promise((res, rej) => {
+      const r = indexedDB.open('vdp', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    }));
+  },
+  async run(mode, fn) {
+    const db = await this.open();
+    return new Promise((res, rej) => { const t = db.transaction('kv', mode), q = fn(t.objectStore('kv'));
+      t.oncomplete = () => res(q.result); t.onerror = t.onabort = () => rej(t.error); });
+  },
+  get() { return Promise.race([this.run('readonly', s => s.get('auth')), sleep(1500).then(() => null)]).catch(() => null); }, // never hang start-up
+  put(v) { return this.run('readwrite', s => v ? s.put(v, 'auth') : s.delete('auth')).catch(() => {}); },
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -38,30 +54,53 @@ async function login() {
   location.href = 'https://accounts.spotify.com/authorize?' + q;
 }
 async function tokenRequest(params) {
-  const r = await fetch('https://accounts.spotify.com/api/token', { method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ client_id: CFG.clientId, ...params }) });
-  const j = await r.json();
-  if (!j.access_token) throw new Error(j.error_description || j.error || 'login failed');
+  let r, j = null;
+  try {
+    r = await fetch('https://accounts.spotify.com/api/token', { method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: CFG.clientId, ...params }) });
+  } catch { throw Object.assign(new Error('No connection to Spotify. Check the internet and try again.'), { network: true }); }
+  try { j = await r.json(); } catch {}
+  if (!j || !j.access_token) // e.code is Spotify's OAuth error, e.g. 'invalid_grant' when the refresh token was revoked
+    throw Object.assign(new Error((j && (j.error_description || j.error)) || 'Spotify login failed (' + r.status + ')'), { code: j && j.error, status: r.status });
   const old = store.get('auth') || {};
   store.set('auth', { access: j.access_token, refresh: j.refresh_token || old.refresh, scope: j.scope || old.scope || '',
     expires: Date.now() + (j.expires_in - 60) * 1000 });
 }
 const hasScope = s => ((store.get('auth') || {}).scope || '').split(' ').includes(s);
-async function getToken() {
+const RELOGIN = 'Spotify asked you to log in again.';
+function loginExpired() { // the only place the login is forgotten: Spotify refused the refresh token itself
+  store.del('auth'); store.set('relogin', true); showConnect(RELOGIN);
+}
+let refreshing = null; // one refresh at a time: Spotify can rotate the refresh token, so two parallel refreshes could knock each other out
+async function refreshAuth(a) {
+  try { await tokenRequest({ grant_type: 'refresh_token', refresh_token: a.refresh }); }
+  catch (e) {
+    if (e.code === 'invalid_grant' && (store.get('auth') || {}).refresh === a.refresh) { loginExpired(); throw new Error(RELOGIN); }
+    throw e; // network trouble, Spotify hiccup, rate limit...: keep the login and try again later
+  }
+}
+async function getToken(force = false) { // force: Spotify refused the access token, get a new one even if it should still be valid
   let a = store.get('auth');
   if (!a) throw new Error('not logged in');
-  if (Date.now() > a.expires) {
-    try { await tokenRequest({ grant_type: 'refresh_token', refresh_token: a.refresh }); }
-    catch (e) { if (/invalid_grant|revoked|refresh/i.test(e.message)) { store.del('auth'); showConnect(); } throw e; }
+  if (force || Date.now() > a.expires) {
+    if (!refreshing) refreshing = refreshAuth(a).finally(() => { refreshing = null; });
+    await refreshing;
     a = store.get('auth');
+    if (!a) throw new Error('not logged in');
   }
   return a.access;
 }
-async function api(path, opts = {}) {
+window.vdpBusy = () => !!refreshing || isPlaying(); // the update loader in index.html waits while this is true
+async function api(path, opts = {}, retried = false) {
   const url = path.startsWith('http') ? path : 'https://api.spotify.com/v1' + path;
-  const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + await getToken(), 'Content-Type': 'application/json' } });
-  if (r.status === 401) { store.del('auth'); showConnect(); throw new Error('Session expired, please log in again'); }
+  const token = await getToken();
+  const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' } });
+  if (r.status === 401 && !retried) { // access token refused: refresh it once and retry once; the login itself stays
+    if ((store.get('auth') || {}).access === token) await getToken(true);
+    return api(path, opts, true);
+  }
+  if (r.status === 401) throw new Error('Spotify did not accept the login just now. Please try again.');
   if (!r.ok && r.status !== 204) {
     let m = ''; try { m = (await r.json()).error.message; } catch {}
     throw new Error(m || 'Spotify error ' + r.status);
@@ -345,7 +384,10 @@ let tab = 'playlists';
 const loaded = {};
 function card(img, name, sub, onclick, cls = '') {
   const c = document.createElement('button'); c.className = 'card ' + cls;
-  c.innerHTML = `<div class="sleeve">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<div class="ph"></div>'}</div><div class="n">${esc(name)}</div><div class="s">${esc(sub)}</div>`;
+  c.innerHTML = `<div class="sleeve"><i class="rec"><b></b></i>${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<div class="ph"></div>'}</div><div class="n">${esc(name)}</div><div class="s">${esc(sub)}</div>`;
+  // the record's centre label shows the cover too (CSS var --art); it is set only once the lazy cover has loaded, so off-screen cards fetch nothing extra
+  const im = c.querySelector('img');
+  if (im) im.addEventListener('load', () => c.firstChild.style.setProperty('--art', 'url("' + img.replace(/["\\\n]/g, encodeURIComponent) + '")'), { once: true });
   c.onclick = () => { $('sheet').classList.add('hidden'); onclick(); };
   return c;
 }
@@ -592,7 +634,12 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); togglePlay(); } if (e.code === 'ArrowRight') next(); if (e.code === 'ArrowLeft') prev(); });
 
 /* ---------- start-up ---------- */
-function showConnect() { $('connect').classList.remove('hidden'); }
+function showConnect(why) { // why: short honest reason, only when an existing login really has to be redone
+  const c = $('connect'); let w = $('connectWhy');
+  if (why && !w) { w = document.createElement('p'); w.id = 'connectWhy'; w.style.cssText = 'margin:0 0 10px;opacity:.85'; c.insertBefore(w, c.firstChild); }
+  if (w) w.textContent = why || '';
+  c.classList.remove('hidden');
+}
 $('bConnect').onclick = login;
 
 function startPlayer() {
@@ -603,7 +650,12 @@ function startPlayer() {
   p.addListener('not_ready', () => { S.deviceId = null; setTimeout(() => S.player && !S.deviceId && S.player.connect(), 2500); }); // reconnect after a drop
   p.addListener('player_state_changed', onState);
   p.addListener('initialization_error', e => toast('Player: ' + e.message));
-  p.addListener('authentication_error', e => { toast('Login problem: ' + e.message); store.del('auth'); showConnect(); });
+  let authRetryAt = 0; // the SDK's token was refused: get a fresh one and reconnect (at most every 30 s); the login stays
+  p.addListener('authentication_error', e => {
+    if (Date.now() - authRetryAt < 30000) return toast('Login problem: ' + e.message);
+    authRetryAt = Date.now();
+    getToken(true).then(() => { p.disconnect(); return p.connect(); }).catch(err => toast(err.message));
+  });
   p.addListener('account_error', () => toast('Spotify Premium is required to play music here'));
   p.addListener('playback_error', e => toast('Playback: ' + e.message));
   p.addListener('autoplay_failed', () => toast('Tap the record to keep playing'));
@@ -614,13 +666,18 @@ function startPlayer() {
 async function init() {
   setArm(ARM.rest); showTrack(null); renderVfd(); $('disc').classList.add('off');
   if (DEMO) return demo();
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch {} // ask the browser not to evict our storage
   const code = new URLSearchParams(location.search).get('code');
   if (code) {
-    try { await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: CFG.redirect, code_verifier: store.get('verifier') }); }
+    try { await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: CFG.redirect, code_verifier: store.get('verifier') }); store.del('relogin'); }
     catch (e) { toast(e.message); }
     history.replaceState(null, '', location.pathname);
   }
-  if (!store.get('auth')) return showConnect();
+  if (!store.get('auth')) { // localStorage lost the login? take the copy from IndexedDB
+    const saved = await authDb.get();
+    if (saved && saved.refresh) try { store.set('auth', saved); } catch {}
+  } else authDb.put(store.get('auth')); // keep the IndexedDB copy up to date (first start after this update)
+  if (!store.get('auth')) return showConnect(store.get('relogin') ? RELOGIN : '');
   const sdk = document.createElement('script'); sdk.src = 'https://sdk.scdn.co/spotify-player.js';
   window.onSpotifyWebPlaybackSDKReady = startPlayer; document.head.appendChild(sdk);
   setTimeout(showControls, 600);

@@ -350,3 +350,102 @@ html[data-disc="clear"] #mat { background: repeating-radial-gradient(circle, rgb
 .disc.on .sw { box-shadow: 0 0 0 2px #ffb038, 0 0 14px rgba(255,176,56,.5); }
 .disc.on span { color: #ffb038; }
 html[data-disc="clear"] .sw[data-d="clear"], .sw[data-d="clear"] { background: var(--rec-bg), linear-gradient(135deg, #45454d, #26262b); }
+
+
+/* ---------- v9: the record crate (playlist browser) ---------- */
+/* sheet: warm felt with a soft top light, a lit header lip and a fade at the bottom edge */
+#sheet { background:
+    radial-gradient(ellipse 75% 45% at 50% 0, rgba(255,196,128,.075), transparent 72%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .88  0 0 0 0 .74  .09 0 0 0 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    linear-gradient(180deg, rgba(30,24,19,.955), rgba(15,12,10,.965));
+  border-color: rgba(255,232,200,.09); box-shadow: 0 28px 70px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,232,200,.07); }
+#sheet::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30px; border-radius: 0 0 22px 22px; pointer-events: none;
+  background: linear-gradient(rgba(15,12,10,0), rgba(15,12,10,.92)); }
+#sheetHead { padding: 14px 14px 12px 20px; border-radius: 22px 22px 0 0;
+  background: linear-gradient(180deg, rgba(255,232,200,.06), rgba(255,232,200,.012));
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.6), 0 1px 0 rgba(255,232,200,.07); }
+#tabs { gap: 4px; }
+#tabs button { letter-spacing: .02em; transition: background .25s, color .25s, box-shadow .25s; }
+#tabs button.on { background: linear-gradient(180deg, #f5ecdc, #dbcdb5); color: #1a1612; box-shadow: inset 0 1px 0 rgba(255,255,255,.65), inset 0 -1px 0 rgba(0,0,0,.12), 0 2px 7px rgba(0,0,0,.45); }
+#count { font: 600 11px -apple-system, "Segoe UI", sans-serif; letter-spacing: .16em; text-transform: uppercase; opacity: .45; }
+
+/* grid: bigger sleeves, room for the record, an engraved divider between rows */
+#lists, #results { grid-template-columns: repeat(auto-fill, minmax(184px, 1fr)); gap: 46px 26px; align-content: start; }
+#lists { flex: 1; min-height: 0; overflow-x: hidden; padding: 26px 26px 44px; }
+.card { position: relative; display: grid !important; grid-template-columns: minmax(0, 1fr); align-content: start; place-items: start stretch; text-align: left; background: none; }
+.card:active { opacity: 1; background: none; }
+.card::after { content: ""; position: absolute; left: -100vw; right: -100vw; bottom: -24px; height: 2px; pointer-events: none;
+  background: linear-gradient(180deg, #090706 50%, #2b2017 50%); }
+.card div.n { font-size: 15px; margin-top: 13px; color: #f0e6d6; letter-spacing: .01em; }
+.card div.s { font: 600 10.5px -apple-system, "Segoe UI", sans-serif; letter-spacing: .14em; opacity: .48; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* sleeve: square cover with spine fold, gloss, paper grain, ring wear, worn corners and a layered shadow */
+.card .sleeve { position: relative; z-index: 0; margin-right: 32%; transition: transform .3s; }
+.card .sleeve::before { content: none; }
+.card .sleeve img, .card .sleeve .ph { border-radius: 3px;
+  box-shadow: 0 1px 1px rgba(0,0,0,.4), 0 4px 8px rgba(0,0,0,.32), 0 12px 26px rgba(0,0,0,.42); }
+.card .sleeve::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 3px; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.42), rgba(255,255,255,.16) 1.4%, rgba(0,0,0,.1) 3.2%, transparent 6.5%),
+    linear-gradient(270deg, rgba(0,0,0,.3), rgba(255,255,255,.06) 1.2%, transparent 3%),
+    radial-gradient(circle closest-side, transparent 0 87%, rgba(255,250,240,.045) 90.5%, rgba(255,250,240,.075) 93%, rgba(255,250,240,.03) 95.5%, transparent 97.5%),
+    radial-gradient(circle closest-side, transparent 0 31%, rgba(255,250,240,.035) 33%, transparent 35.5%),
+    linear-gradient(128deg, rgba(255,255,255,.2), rgba(255,255,255,.05) 24%, transparent 42% 72%, rgba(255,255,255,.05) 86%, transparent),
+    radial-gradient(circle at 0 0, rgba(255,250,240,.34), transparent 5.5%),
+    radial-gradient(circle at 100% 100%, rgba(255,250,240,.16), transparent 5%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0  1 0 0 0 0  1 0 0 0 0  0 0 0 0 .085'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>");
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(0,0,0,.35); }
+
+/* the record half out of the sleeve: grooves, track gaps, run-out, bevelled edge, bow-tie sheen, cover-art label, spindle hole */
+.card .rec { position: absolute; z-index: -1; left: 54%; top: 3%; width: 94%; height: 94%; border-radius: 50%; pointer-events: none;
+  transition: transform .55s cubic-bezier(.2,.75,.25,1);
+  background:
+    conic-gradient(from 22deg, transparent 0 5%, rgba(255,255,255,.15) 10.5%, transparent 16.5% 50%, rgba(255,255,255,.09) 59%, transparent 66%),
+    conic-gradient(from 22deg, transparent 0 9.6%, rgba(255,255,255,.11) 10.6%, transparent 11.6%),
+    conic-gradient(from 118deg, transparent 0 6%, rgba(255,255,255,.05) 10%, transparent 14% 56%, rgba(255,255,255,.04) 60%, transparent 64%),
+    radial-gradient(circle closest-side, transparent 0 95.6%, rgba(255,255,255,.22) 97.2%, rgba(0,0,0,.75) 99.4%, transparent 100%),
+    radial-gradient(circle closest-side, transparent 0 34.4%, rgba(0,0,0,.7) 35% 35.8%, rgba(255,255,255,.04) 36.4% 43.4%, rgba(0,0,0,.55) 43.8% 44.4%, transparent 45%,
+      transparent 55.4%, rgba(0,0,0,.65) 55.7% 56.3%, rgba(255,255,255,.08) 56.7%, transparent 57.3% 67.4%, rgba(0,0,0,.65) 67.7% 68.3%, rgba(255,255,255,.08) 68.7%, transparent 69.3% 79.4%,
+      rgba(0,0,0,.65) 79.7% 80.3%, rgba(255,255,255,.08) 80.7%, transparent 81.3% 89.2%, rgba(0,0,0,.55) 89.5% 90.1%, transparent 90.6%),
+    repeating-radial-gradient(circle, #0c0c0e 0 .6px, #1e1e21 .6px 1.1px, #0f0f11 1.1px 1.8px);
+  box-shadow: 0 0 0 .5px rgba(0,0,0,.85), 3px 5px 9px rgba(0,0,0,.5), 9px 14px 26px rgba(0,0,0,.35); }
+.card .rec b { position: absolute; inset: 33%; border-radius: 50%; transition: transform .7s cubic-bezier(.2,.75,.25,1);
+  background:
+    radial-gradient(circle closest-side, #060607 0 12%, rgba(255,255,255,.32) 14%, rgba(0,0,0,.28) 17%, transparent 21%),
+    radial-gradient(circle closest-side, transparent 0 60%, rgba(0,0,0,.2) 61% 62.5%, transparent 63.5% 86%, rgba(0,0,0,.4) 95%, rgba(0,0,0,.72) 100%),
+    radial-gradient(circle at 32% 26%, rgba(255,255,255,.3), transparent 46%),
+    var(--art, radial-gradient(circle, #e4ae56, #9a6420)) center / cover;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
+.card.liked .sleeve { --art: linear-gradient(135deg, #4a2fbd, #8fd0c3); }
+@media (hover: hover) { .card:hover .rec { transform: translateX(10%); } .card:hover .rec b { transform: rotate(48deg); } }
+.card:active .rec, .card:focus-visible .rec { transform: translateX(10%); }
+.card:active .rec b { transform: rotate(48deg); }
+.card:active .sleeve { transform: scale(.975); }
+
+/* artists: a round photo, no record, a soft spherical gloss */
+.card.artist { text-align: center; }
+.card.artist .sleeve { margin: 0 16%; }
+.card.artist .rec { display: none; }
+.card.artist .sleeve::after { border-radius: 50%; background: radial-gradient(circle at 34% 26%, rgba(255,255,255,.22), transparent 44%), radial-gradient(circle closest-side, transparent 0 88%, rgba(0,0,0,.3) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 1px 0 rgba(255,255,255,.18); }
+
+/* empty crate ("Recently played" with no records yet, no saved albums) */
+#lists:not(:has(*)) { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding-bottom: 9vh; text-align: center;
+  font: italic 17px/1.5 "Iowan Old Style", "Palatino Linotype", Georgia, serif; color: rgba(233,223,207,.55); }
+#lists:not(:has(*))::before { content: ""; width: 230px; height: 163px; opacity: .92;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 170'><defs><linearGradient id='w' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23845232'/><stop offset='1' stop-color='%234a2a18'/></linearGradient><radialGradient id='v'><stop offset='0' stop-color='%23e3ad55'/><stop offset='.3' stop-color='%23a86a28'/><stop offset='.32' stop-color='%230a0a0b'/><stop offset='.36' stop-color='%231f1f22'/><stop offset='.66' stop-color='%23131315'/><stop offset='.68' stop-color='%2329292c'/><stop offset='.7' stop-color='%23141416'/><stop offset='.95' stop-color='%23171719'/><stop offset='1' stop-color='%23050505'/></radialGradient></defs><ellipse cx='120' cy='161' rx='112' ry='7' fill='%23000' opacity='.5'/><circle cx='120' cy='66' r='52' fill='url(%23v)'/><path d='M84 30 A50 50 0 0 1 150 24' fill='none' stroke='%23fff' stroke-opacity='.16' stroke-width='3'/><circle cx='120' cy='66' r='2.4' fill='%23050505'/><rect x='16' y='80' width='208' height='78' rx='5' fill='url(%23w)'/><rect x='16' y='80' width='208' height='2.5' rx='1.2' fill='%23ffe2b8' opacity='.25'/><rect x='16' y='105' width='208' height='1.6' fill='%23000' opacity='.4'/><rect x='16' y='131' width='208' height='1.6' fill='%23000' opacity='.4'/><rect x='92' y='89' width='56' height='11' rx='5.5' fill='%23160c06'/><rect x='16' y='80' width='10' height='78' fill='%23000' opacity='.2'/><rect x='214' y='80' width='10' height='78' fill='%23000' opacity='.2'/></svg>") center / contain no-repeat; }
+
+/* ---------- v9b: turntable realism (finer record sheen, headshell shadow, stylus glint) ---------- */
+/* a narrow bright core inside each light lobe; the paper label stays matte (picture discs are glossy all over) */
+#sheen { background:
+    conic-gradient(from 35deg, transparent 0 11.4%, rgba(255,255,255,.1) 12.9%, transparent 14.4% 60%, rgba(255,255,255,.07) 61.6%, transparent 63.2% 100%),
+    conic-gradient(from 35deg, transparent 0 8%, rgba(255,255,255,.17) 13%, transparent 21% 55%, rgba(255,255,255,.12) 62%, transparent 70% 100%),
+    conic-gradient(from 125deg, transparent 0 9%, rgba(255,255,255,.035) 13%, transparent 17% 59%, rgba(255,255,255,.03) 63%, transparent 67% 100%);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 34%, #000 34.8%); mask: radial-gradient(circle closest-side, transparent 0 34%, #000 34.8%); }
+html[data-disc="picture"] #sheen { -webkit-mask: none; mask: none; }
+/* the headshell casts a tighter contact shadow onto the record while the stylus is down */
+#tonearm::before { content: ""; position: absolute; z-index: -1; left: calc(var(--u) * .9); top: calc(var(--u) * 34.6); width: calc(var(--u) * 5.2); height: calc(var(--u) * 8.6); border-radius: 45%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(0,0,0,.42), rgba(0,0,0,.18) 60%, transparent); transform: translate(calc(var(--u) * 1.2), calc(var(--u) * 1.4)); opacity: .6; transition: transform 1.4s, opacity 1.4s; }
+.playing #tonearm::before { transform: translate(calc(var(--u) * .45), calc(var(--u) * .55)); opacity: 1; }
+.playing #tonearm::after { content: ""; position: absolute; left: calc(var(--u) * 2.45); top: calc(var(--u) * 41.7); width: calc(var(--u) * 1.6); height: calc(var(--u) * 1.6); border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle closest-side, rgba(255,236,200,.38), rgba(255,236,200,.1) 45%, transparent); }

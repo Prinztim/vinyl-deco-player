@@ -82,5 +82,32 @@ await ev('FP.inst.paused = true; FP.inst.emit()'); await sleep(300);
 await ev('togglePlay()'); await sleep(5000);
 s = await state(); check('6 play works after a skip that did nothing', !s.paused && !s.holding, JSON.stringify(s));
 
+// 7-10. the login survives: a refused access token is refreshed once and retried, only a revoked refresh token logs out
+const AUTH = (tokenReply, setup = '') => ev(`(async () => {
+  ${setup}
+  const prev = window.fetch, calls = [];
+  window.fetch = (u, o = {}) => { u = String(u);
+    const res = (status, j) => Promise.resolve({ ok: status < 300, status, json: () => Promise.resolve(j) });
+    if (u.includes('accounts.spotify.com/api/token')) { calls.push('token'); return ${tokenReply}; }
+    if (u.endsWith('/v1/me')) { const a = o.headers.Authorization; calls.push('me ' + a); return a === 'Bearer fresh' ? res(200, { id: 'tim' }) : res(401, { error: { status: 401, message: 'The access token expired' } }); }
+    return prev(u, o); };
+  let me = null, err = null;
+  try { me = (await api('/me')).id; } catch (e) { err = e.message; } finally { window.fetch = prev; }
+  return { me, err, calls, auth: JSON.parse(localStorage.getItem('vdp.auth')), idb: await authDb.get(), connect: !$('connect').classList.contains('hidden'), why: ($('connectWhy') || {}).textContent || '' };
+})()`);
+let a = await AUTH(`res(200, { access_token: 'fresh', expires_in: 3600 })`);
+check('7 API answers 401: refresh once, retry succeeds, login kept (and mirrored to IndexedDB)', a.me === 'tim' && a.calls.join() === 'me Bearer x,token,me Bearer fresh' && a.auth && a.auth.access === 'fresh' && a.auth.refresh === 'y' && a.idb && a.idb.access === 'fresh' && !a.connect, JSON.stringify(a));
+
+await ev(`window.__f = window.fetch; window.fetch = (u, o = {}) => String(u).includes('accounts.spotify.com/api/token') ? Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ access_token: 'sdkfresh', expires_in: 3600 }) }) : window.__f(u, o); S.deviceId = null; FP.inst.l.authentication_error({ message: 'Invalid token' });`);
+await sleep(1000);
+s = await ev(`(() => { window.fetch = window.__f; return { auth: JSON.parse(localStorage.getItem('vdp.auth')), device: S.deviceId, connect: !$('connect').classList.contains('hidden'), toast: $('toast').textContent }; })()`);
+check('8 SDK authentication_error: refresh + reconnect, login kept', s.auth && s.auth.access === 'sdkfresh' && s.auth.refresh === 'y' && s.device === 'dev' && !s.connect, JSON.stringify(s));
+
+a = await AUTH(`Promise.reject(new TypeError('Failed to fetch'))`, `localStorage.setItem('vdp.auth', JSON.stringify({ access: 'old', refresh: 'y', scope: 'user-library-read', expires: 0 }));`);
+check('9 network error while refreshing: login kept', !a.me && a.err && a.calls.join() === 'token' && a.auth && a.auth.refresh === 'y' && !a.connect, JSON.stringify(a));
+
+a = await AUTH(`res(400, { error: 'invalid_grant', error_description: 'Refresh token revoked' })`);
+check('10 refresh token revoked (invalid_grant): login cleared everywhere, connect button says why', !a.me && !a.auth && !a.idb && a.connect && /log in again/.test(a.why), JSON.stringify(a));
+
 console.log(fails ? `${fails} FAILED` : 'ALL PASSED');
 ws.close(); chrome.kill(); process.exit(fails ? 1 : 0);
