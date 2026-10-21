@@ -591,7 +591,7 @@ $('vol').oninput = e => { store.set('vol', +e.target.value); S.player && S.playe
 /* ---------- turntable skins: same player, different cabinet (looks live in skins.css) ---------- */
 const SKINS = [
   { id: 'walnut', name: 'Walnut', badge: ['VINYL', 'DECO · HI-FI'], drive: 'DIRECT DRIVE · QUARTZ LOCK', room: '#0d0b09' },
-  { id: 'teak', name: 'Teak', badge: ['TEAK', 'NORDIC · 62'], drive: 'BELT DRIVE · HAND OILED TEAK', room: '#100a07' },
+  { id: 'teak', name: 'Teak', badge: ['ARCHIVE', 'STEREO TURNTABLE'], drive: 'BELT DRIVE · HAND OILED TEAK', room: '#120a06' },
   { id: 'acrylic', name: 'Smoked Acrylic', badge: ['PRISM', 'CLEAR AUDIO'], drive: 'ISOLATED PLATTER · LED EDGE', room: '#06060b' },
   { id: 'deco', name: 'Art Deco', badge: ['ODEON', 'EST · 1932'], drive: '', room: '#0a0806' },
   { id: 'cream', name: "Cream '72", badge: ['vinyl', 'PS 72'], drive: 'BELT DRIVE', room: '#3a3a3a' },

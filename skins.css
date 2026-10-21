@@ -615,3 +615,68 @@ html[data-skin="walnut"] { --cart: #d9a33f; }
 #armbase, #powerknob, #antiskate .dial, #vfd, #badge, #ctl::before, #pitch .slot { outline: none; }
 #armbase { box-shadow: 0 0 0 calc(var(--u) * .12) rgba(0,0,0,.35), 0 calc(var(--u) * .25) calc(var(--u) * .35) rgba(0,0,0,.45), 0 calc(var(--u) * .9) calc(var(--u) * 1.6) rgba(0,0,0,.45); }
 #well { box-shadow: inset 0 calc(var(--u) * .7) calc(var(--u) * 1.6) rgba(0,0,0,.95), inset 0 0 0 calc(var(--u) * .15) rgba(0,0,0,.6), 0 1px 0 rgba(255,225,180,.18); }
+
+
+/* =====================================================================
+   v11: TEAK HEIRLOOM (concept B): deep glossy wood, thick bevelled plinth, window light
+   ===================================================================== */
+html[data-skin="teak"] {
+  --room: #120a06;
+  --t-hi: #ffffff; --t-mid: #d3d6da; --t-lo: #6a6e74;   /* chrome arm tube */
+  --amb: 214, 128, 52;
+}
+[data-skin="teak"] #plinth { border: calc(var(--u) * 1.5) solid transparent; border-radius: calc(var(--u) * 1.2);
+  background:
+    linear-gradient(112deg, transparent 0 4%, rgba(255,196,128,.26) 10%, rgba(255,196,128,.08) 18%, transparent 24%, transparent 40%, rgba(255,196,128,.18) 47%, rgba(255,196,128,.05) 55%, transparent 61%, transparent 74%, rgba(255,196,128,.1) 80%, transparent 88%) padding-box,
+    radial-gradient(ellipse at 14% 8%, rgba(255,214,160,.16), transparent 52%) padding-box,
+    radial-gradient(ellipse at 92% 104%, rgba(0,0,0,.34), transparent 58%) padding-box,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='800'><filter id='f' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.16 0.0011' numOctaves='4' seed='8'/><feColorMatrix values='0 0 0 0 0.07  0 0 0 0 0.02  0 0 0 0 0.005  3.6 0 0 0 -1.45'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>") padding-box,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='800'><filter id='f' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.30 0.0016' numOctaves='3' seed='19'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.66  0 0 0 0 0.38  2.8 0 0 0 -1.5'/></filter><rect width='100%25' height='100%25' filter='url(%23f)' opacity='.2'/></svg>") padding-box,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='800'><filter id='f' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.02 0.003' numOctaves='3' seed='3'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.045  0 0 0 0 0.012  1.9 0 0 0 -.55'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>") padding-box,
+    linear-gradient(160deg, #7a3416 0%, #5a230d 48%, #6c2c11 100%) padding-box,
+    linear-gradient(135deg, #c98253 0%, #a4562a 30%, #7a3516 60%, #4e1f0c 100%) border-box;
+  background-size: auto, auto, auto, cover, cover, cover, auto, auto;
+  box-shadow:
+    inset 0 calc(var(--u) * .15) 0 rgba(255,226,180,.5), inset calc(var(--u) * .15) 0 0 rgba(255,226,180,.2),
+    inset 0 calc(var(--u) * -.2) 0 rgba(0,0,0,.45), inset calc(var(--u) * -.2) 0 0 rgba(0,0,0,.3),
+    0 calc(var(--u) * .7) 0 #5a2510, 0 calc(var(--u) * 1.3) 0 #451b0b, 0 calc(var(--u) * 1.9) 0 #321208,
+    0 calc(var(--u) * 3) calc(var(--u) * 3.6) rgba(0,0,0,.75), 0 calc(var(--u) * 6) calc(var(--u) * 9) rgba(0,0,0,.55); }
+/* brass inlay line right inside the bevel */
+[data-skin="teak"] #deco { inset: calc(var(--u) * .9); box-shadow: none; border-radius: calc(var(--u) * .4); }
+[data-skin="teak"] #deco::before { inset: 0; border: calc(var(--u) * .16) solid transparent; border-image: linear-gradient(135deg, #fbe7a6, #c9a14a 40%, #8a6a28 70%, #e6c779) 1; box-shadow: 0 0 0 1px rgba(40,12,0,.45); }
+/* room: warm dark floor with soft lamp light and a faint rug */
+[data-skin="teak"] #ambient { background:
+  radial-gradient(ellipse 60% 50% at 8% 6%, rgba(255,190,110,.20), transparent 70%),
+  radial-gradient(ellipse 80% 70% at 46% 45%, rgba(var(--amb), .16), transparent 70%),
+  radial-gradient(ellipse 50% 40% at 92% 70%, rgba(120,40,30,.25), transparent 70%),
+  var(--room); }
+[data-skin="teak"] #plinth::after { background: radial-gradient(ellipse at 50% 0, rgba(0,0,0,.5), transparent 70%); height: calc(var(--u) * 7); top: calc(100% + var(--u) * 1.6); }
+
+/* --- teak heirloom, part 2: glass lid, engraved knob, nameplate, felt, brass headshell --- */
+html[data-skin="teak"] { --h-hi: #f0d68a; --h-lo: #8a6a28; --cart: #1b1815; }
+[data-skin="teak"] #deco .d5 { display: block; left: calc(var(--u) * 6); right: calc(var(--u) * 6); top: calc(var(--u) * -3.6); height: calc(var(--u) * 3.2); z-index: 4;
+  border-radius: calc(var(--u) * .5) calc(var(--u) * .5) 0 0; border: 1px solid rgba(255,255,255,.35); border-bottom: 0;
+  background: linear-gradient(180deg, rgba(220,235,245,.16), rgba(200,220,235,.06) 60%, rgba(255,255,255,.14)), linear-gradient(115deg, transparent 20%, rgba(255,255,255,.18) 30%, transparent 40%, transparent 62%, rgba(255,255,255,.12) 70%, transparent 78%);
+  box-shadow: inset 0 calc(var(--u) * .15) 0 rgba(255,255,255,.5); }
+[data-skin="teak"] .hinge { top: calc(var(--u) * -2.4); width: calc(var(--u) * 7.6); height: calc(var(--u) * 3.6); border-radius: calc(var(--u) * .4); z-index: 5;
+  background: linear-gradient(180deg, #fbeaae, #c9a14a 40%, #8a6a28 60%, #e6c779); box-shadow: 0 calc(var(--u) * .35) calc(var(--u) * .6) rgba(0,0,0,.6), inset 0 0 0 1px rgba(60,35,5,.5); }
+[data-skin="teak"] .hinge::before, [data-skin="teak"] .hinge::after { top: auto; bottom: calc(var(--u) * .5); width: calc(var(--u) * .7); height: calc(var(--u) * .7); }
+[data-skin="teak"] .hl { left: calc(var(--u) * 14); } [data-skin="teak"] .hr { left: calc(var(--u) * 78); }
+/* engraved knob */
+[data-skin="teak"] #powerknob { left: calc(var(--u) * 2.2); top: calc(var(--u) * 7.2); width: calc(var(--u) * 7.4); height: calc(var(--u) * 7.4); }
+[data-skin="teak"] #powerknob::after { display: block; inset: calc(var(--u) * -1.7);
+  background: repeating-conic-gradient(from -62deg, #fbe7a6 0 1.2deg, transparent 1.2deg 5.6deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 86%, #000 88% 100%), conic-gradient(from -62deg, #000 0 112deg, transparent 112deg); -webkit-mask-composite: source-in;
+  mask: radial-gradient(circle closest-side, transparent 0 86%, #000 88% 100%), conic-gradient(from -62deg, #000 0 112deg, transparent 112deg); mask-composite: intersect; }
+[data-skin="teak"] #powerknob::before { inset: calc(var(--u) * -1.9); box-shadow: 0 0 0 calc(var(--u) * .2) #c9a14a, 0 0 0 calc(var(--u) * .4) #5a2510, 0 calc(var(--u) * .4) calc(var(--u) * .8) rgba(0,0,0,.5), inset 0 0 calc(var(--u) * .6) rgba(0,0,0,.5); background: radial-gradient(circle, transparent 60%, rgba(0,0,0,.28) 100%); }
+[data-skin="teak"] #led { left: calc(var(--u) * 5.2); top: calc(var(--u) * 3.4); background: #ff9a1f; box-shadow: 0 0 calc(var(--u) * 1.4) rgba(255,150,30,.85), inset 0 0 0 calc(var(--u) * .15) #7a4a10; }
+/* nameplate */
+[data-skin="teak"] #badge { width: calc(var(--u) * 14); padding: calc(var(--u) * 1) 0 calc(var(--u) * .9); border-radius: calc(var(--u) * .3);
+  background: linear-gradient(180deg, #f1d98f, #c9a14a 45%, #a98336 55%, #e2c571); font-family: Georgia, "Times New Roman", serif; color: #4a3410;
+  box-shadow: 0 calc(var(--u) * .3) calc(var(--u) * .7) rgba(0,0,0,.6), inset 0 0 0 calc(var(--u) * .18) rgba(255,246,200,.7), inset 0 0 0 calc(var(--u) * .34) rgba(110,80,25,.55); }
+[data-skin="teak"] #badge b { font-weight: 400; font-size: calc(var(--u) * 1.5); letter-spacing: .5em; text-indent: .5em; text-shadow: 0 1px 0 rgba(255,244,200,.8); }
+[data-skin="teak"] #badge span { font-size: calc(var(--u) * .55); letter-spacing: .3em; opacity: .8; margin-top: calc(var(--u) * .4); }
+/* more felt around a slightly smaller record */
+[data-skin="teak"] #disc, [data-skin="teak"] #mat { inset: calc(var(--u) * 3.4); }
+[data-skin="teak"] #rim { inset: calc(var(--u) * -2.6); }
+[data-skin="teak"] #led { left: calc(var(--u) * 5.2); top: calc(var(--u) * 17.4); }
