@@ -92,6 +92,19 @@ await sleep(8500);
 s = await state(); let e2 = await ev("FP.inst.log.slice()");
 check('6b after the record swap the next song plays, exactly one skip', s.track === 't21' && !s.paused && !s.swapping && e2.filter(x => x === 'next').length === 1, JSON.stringify({ s, log: e2 }));
 
+// 6c. Space typed into a text field must not pause the music; Space on the page still does
+await ev("FP.inst.log = []; window.__i = document.createElement('input'); document.body.appendChild(window.__i); window.__i.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space', bubbles: true }))"); await sleep(400);
+let sp = await ev("({ log: FP.inst.log.slice(), paused: FP.inst.paused })");
+check('6c Space in the search box does not pause', !sp.log.includes('pause') && !sp.paused, JSON.stringify(sp));
+await ev("window.__i.remove(); document.body.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space', bubbles: true }))"); await sleep(400);
+sp = await ev("({ paused: FP.inst.paused })");
+check('6c Space on the page still pauses', sp.paused, JSON.stringify(sp));
+await ev("FP.inst.paused = false; FP.inst.emit()"); await sleep(300);
+// 6d. a song from search is played inside its album (so Spotify continues afterwards)
+await ev("window.__body = songBody('spotify:track:t5', 'spotify:album:a1'); window.__body2 = songBody('spotify:track:t6', null)");
+sp = await ev("({ a: window.__body, b: window.__body2 })");
+check('6d search song plays inside its album, with a fallback to the single song', sp.a.context_uri === 'spotify:album:a1' && sp.a.offset.uri === 'spotify:track:t5' && sp.b.uris[0] === 'spotify:track:t6', JSON.stringify(sp));
+
 // 7-10. the login survives: a refused access token is refreshed once and retried, only a revoked refresh token logs out
 const AUTH = (tokenReply, setup = '') => ev(`(async () => {
   ${setup}

@@ -346,13 +346,13 @@ async function cueAndPlay(fromStart) { // lower the arm onto the record, then st
 function stash(t) { // remember records that were taken off, newest first
   if (!t || !t.uri) return;
   const h = (store.get('recent') || []).filter(x => x.uri !== t.uri);
-  h.unshift({ uri: t.uri, name: t.name, artist: t.artist, art: t.art }); store.set('recent', h.slice(0, 30));
+  h.unshift({ uri: t.uri, name: t.name, artist: t.artist, art: t.art, album: t.album }); store.set('recent', h.slice(0, 30));
 }
 
 function onState(s) {
   if (!s || !s.track_window.current_track) return;
   const t = s.track_window.current_track; S.lastStateAt = Date.now();
-  const track = { id: t.id || t.uri, uri: t.uri, name: t.name, artist: t.artists.map(a => a.name).join(', '), art: (t.album.images[0] || {}).url };
+  const track = { id: t.id || t.uri, uri: t.uri, name: t.name, artist: t.artists.map(a => a.name).join(', '), art: (t.album.images[0] || {}).url, album: t.album.uri };
   if (S.expect && S.expect !== track.id && Date.now() < S.skipUntil) { if (!s.paused) S.player.pause(); return; } // still the old song while the record is being changed
   if (S.expect === track.id) S.expect = null;
   const changed = !S.track || S.track.id !== track.id;
@@ -410,6 +410,7 @@ async function play(body, remember, total) { // total = number of tracks, so a s
   if (remember) store.set('last', body);
   setTimeout(() => { if ((S.lastStateAt || 0) < asked && !isPlaying()) toast('Spotify did not answer. Tap the record to try again.'); }, 6000);
 }
+const songBody = (uri, albumUri) => albumUri ? { context_uri: albumUri, offset: { uri } } : { uris: [uri] }; // a song plays inside its album: Spotify then carries on (and autoplays similar music at the end)
 const playSafe = (body, remember, total) => play(body, remember, total).catch(e => toast(e.message));
 async function playLiked() {
   try {
@@ -429,7 +430,7 @@ async function togglePlay() {
   const last = store.get('last');
   if (last) playSafe(typeof last === 'string' ? { context_uri: last } : last); else openSheet();
 }
-function trackOf(t) { return { id: t.id || t.uri, uri: t.uri, name: t.name, artist: t.artists.map(a => a.name).join(', '), art: (t.album.images[0] || {}).url }; }
+function trackOf(t) { return { id: t.id || t.uri, uri: t.uri, name: t.name, artist: t.artists.map(a => a.name).join(', '), art: (t.album.images[0] || {}).url, album: t.album.uri }; }
 async function skip(dir) { // the record changes first; Spotify is only told to skip when the needle drops, so the song starts once
   if (DEMO) return demoSkip(dir);
   if (!S.player || S.cueing) return;
@@ -492,7 +493,7 @@ async function renderTab() {
     } else {
       const items = store.get('recent') || [];
       box.innerHTML = '';
-      items.forEach(t => box.appendChild(card(t.art, t.name, t.artist, () => playSafe({ uris: [t.uri] }))));
+      items.forEach(t => box.appendChild(card(t.art, t.name, t.artist, () => playSafe(songBody(t.uri, t.album)))));
       $('count').textContent = items.length + ' records';
       if (!items.length) box.textContent = 'Records you take off the turntable will be stacked here.';
     }
@@ -522,7 +523,7 @@ function renderSearch(box) {
         const h = document.createElement('div'); h.className = 'sec'; h.textContent = title; out.appendChild(h); items.forEach(i => out.appendChild(make(i))); return items.length; };
       const img = o => (o.images && o.images[0] && o.images[0].url) || (o.album && o.album.images && o.album.images[0] && o.album.images[0].url);
       let n = 0;
-      n += sec('Songs', r.tracks && (r.tracks.items || []).filter(t => t && t.is_playable !== false), t => card(img(t), t.name, t.artists.map(a => a.name).join(', '), () => playSafe({ uris: [t.uri] }, true)));
+      n += sec('Songs', r.tracks && (r.tracks.items || []).filter(t => t && t.is_playable !== false), t => card(img(t), t.name, t.artists.map(a => a.name).join(', '), () => playSafe(songBody(t.uri, t.album && t.album.uri), true)));
       n += sec('Albums', r.albums && r.albums.items, a => card(img(a), a.name, a.artists.map(x => x.name).join(', '), () => playSafe({ context_uri: a.uri }, true, a.total_tracks || 0)));
       n += sec('Artists', r.artists && r.artists.items, a => card(img(a), a.name, 'Artist', () => playSafe({ context_uri: a.uri }, true), 'artist'));
       n += sec('Playlists', r.playlists && r.playlists.items, p => card(img(p), p.name, 'by ' + ((p.owner && p.owner.display_name) || 'Spotify'), () => playSafe({ context_uri: p.uri }, true)));
@@ -706,7 +707,8 @@ if (store.get('lid') === false) document.body.classList.add('lidoff'); $('bLid')
 let wake = null;
 async function requestWakeLock() { try { if ('wakeLock' in navigator && !wake) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => wake = null); } } catch { /* not allowed */ } }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && isPlaying()) requestWakeLock(); });
-document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); togglePlay(); } if (e.code === 'ArrowRight') next(); if (e.code === 'ArrowLeft') prev(); });
+document.addEventListener('keydown', e => { if (e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return; // typing in the search box: Space is just a space
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); } if (e.code === 'ArrowRight') next(); if (e.code === 'ArrowLeft') prev(); });
 
 /* ---------- start-up ---------- */
 function showConnect(why) { // why: short honest reason, only when an existing login really has to be redone
