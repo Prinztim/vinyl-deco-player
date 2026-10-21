@@ -82,6 +82,16 @@ await ev('FP.inst.paused = true; FP.inst.emit()'); await sleep(300);
 await ev('togglePlay()'); await sleep(5000);
 s = await state(); check('6 play works after a skip that did nothing', !s.paused && !s.holding, JSON.stringify(s));
 
+// 6b. a song reaches its end: Spotify would start the next one by itself; the app must stop first, swap the record, then play the next song once
+await ev("delete FP.inst.st; delete FP.inst.nextTrack; FP.inst.log = []; FP.inst.cur = 20; FP.inst.position = 0; FP.inst.paused = false; FP.inst.emit()"); await sleep(9500);
+await ev("FP.inst.position = 198400; FP.inst.emit()");           // 1.6 s before the end of a 200 s song
+await sleep(1500);
+let e1 = await ev("({ log: FP.inst.log.slice(), cur: FP.inst.cur, paused: FP.inst.paused, swapping: S.swapping })");
+check('6b near the end the app pauses first; the next song has NOT started yet', e1.log.includes('pause') && !e1.log.includes('next') && e1.cur === 20 && e1.paused, JSON.stringify(e1));
+await sleep(8500);
+s = await state(); let e2 = await ev("FP.inst.log.slice()");
+check('6b after the record swap the next song plays, exactly one skip', s.track === 't21' && !s.paused && !s.swapping && e2.filter(x => x === 'next').length === 1, JSON.stringify({ s, log: e2 }));
+
 // 7-10. the login survives: a refused access token is refreshed once and retried, only a revoked refresh token logs out
 const AUTH = (tokenReply, setup = '') => ev(`(async () => {
   ${setup}

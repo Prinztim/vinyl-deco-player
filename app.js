@@ -367,6 +367,13 @@ function onState(s) {
   renderPlaying();
 }
 setInterval(renderArm, 1000);
+/* end of a song: Spotify would start the next one by itself and it would sound for about a second before our pause lands.
+   So stop just before the end and run the normal record swap; the next song then starts once, when the needle drops. */
+setInterval(() => {
+  if (DEMO || !S.track || !isPlaying() || S.cueing || S.dragging || S.dur < 8000) return;
+  if (S.dur - curPos() > 1700 || S.endHandled === S.track.id + ':' + S.dur) return;
+  S.endHandled = S.track.id + ':' + S.dur; skip(1);
+}, 200);
 setInterval(() => { // safety net: if a swap, cue or hold never finished, let go so the buttons work again
   const now = Date.now();
   if (S.swapping && now - (S.busyAt || now) > 40000) { S.swapping = false; S.queued = null; S.holding = false; renderPlaying(); }
