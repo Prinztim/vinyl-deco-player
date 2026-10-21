@@ -585,3 +585,33 @@ html[data-skin="walnut"] { --cart: #d9a33f; }
 [data-skin="walnut"] #deco { display: block; }
 [data-skin="walnut"] #deco .d5 { display: block; inset: calc(var(--u) * 1.8); border: 1px solid rgba(255,225,180,.1); border-radius: calc(var(--u) * .6); box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
 [data-skin="walnut"] #well { box-shadow: inset 0 calc(var(--u) * .6) calc(var(--u) * 1.4) #000, 0 0 0 calc(var(--u) * .25) #3a2417, 0 1px 0 calc(var(--u) * .25) rgba(255,225,180,.2); }
+
+
+/* =====================================================================
+   v10: realism pass from real turntable photos (Technics SL-1200, Rega, Thorens)
+   ===================================================================== */
+/* strobe: round dots in four rows on a brushed band, not dashes */
+#strobe { background: var(--dots) center / 100% 100% no-repeat !important; -webkit-mask: none !important; mask: none !important; opacity: 1; }
+[data-skin="acrylic"] #strobe { background-image: var(--dots-l) !important; opacity: .6; filter: drop-shadow(0 0 2px rgba(140,120,255,.8)); }
+[data-skin="deco"] #strobe { opacity: .85; }
+/* platter edge: polished chamfer on the outside, darker step on the inside */
+#rim::before { inset: calc(var(--u) * .25); box-shadow: inset 0 0 0 1px rgba(0,0,0,.3), 0 0 0 calc(var(--u) * .12) rgba(255,255,255,.55), inset 0 calc(var(--u) * .25) calc(var(--u) * .3) rgba(255,255,255,.35), inset 0 calc(var(--u) * -.25) calc(var(--u) * .3) rgba(0,0,0,.35); }
+/* rubber mat with raised rings, visible while records change */
+#mat { background:
+  radial-gradient(circle closest-side, transparent 0 30%, rgba(255,255,255,.07) 30.5% 31.5%, transparent 32% 58%, rgba(255,255,255,.06) 58.5% 59.5%, transparent 60% 86%, rgba(255,255,255,.06) 86.5% 87.5%, transparent 88%),
+  repeating-radial-gradient(circle, rgba(255,255,255,.055) 0 calc(var(--u) * .12), rgba(0,0,0,.18) calc(var(--u) * .12) calc(var(--u) * .3), transparent calc(var(--u) * .3) calc(var(--u) * .55)),
+  radial-gradient(circle, var(--mat-a), var(--mat-b) 70%); }
+/* vinyl reflection: two broad soft bands (bow-tie) like in photos, plus the sharp core */
+#sheen::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(from 28deg, transparent 0 3%, rgba(255,255,255,.05) 8%, rgba(255,255,255,.13) 12.5%, rgba(255,255,255,.05) 17%, transparent 23% 52%, rgba(255,255,255,.04) 58%, rgba(255,255,255,.1) 62.5%, rgba(255,255,255,.04) 67%, transparent 73% 100%);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 35%, #000 42% 97%, transparent 99%); mask: radial-gradient(circle closest-side, transparent 0 35%, #000 42% 97%, transparent 99%); }
+/* one light for the whole deck: brighter top-left, falling off to the bottom-right, soft vignette at the edges */
+#light { position: absolute; inset: calc(var(--u) * -1); border-radius: inherit; pointer-events: none; z-index: 3;
+  background: radial-gradient(ellipse 70% 60% at 22% 12%, rgba(255,246,230,.07), transparent 70%),
+    linear-gradient(150deg, transparent 45%, rgba(0,0,0,.12) 100%),
+    radial-gradient(ellipse 120% 110% at 50% 45%, transparent 62%, rgba(0,0,0,.16) 100%); }
+[data-skin="marble"] #light, [data-skin="cream"] #light { background: radial-gradient(ellipse 70% 60% at 22% 12%, rgba(255,255,255,.12), transparent 70%), linear-gradient(150deg, transparent 50%, rgba(60,45,30,.08) 100%); }
+/* contact shadows: every part sits on the plinth, not floating */
+#armbase, #powerknob, #antiskate .dial, #vfd, #badge, #ctl::before, #pitch .slot { outline: none; }
+#armbase { box-shadow: 0 0 0 calc(var(--u) * .12) rgba(0,0,0,.35), 0 calc(var(--u) * .25) calc(var(--u) * .35) rgba(0,0,0,.45), 0 calc(var(--u) * .9) calc(var(--u) * 1.6) rgba(0,0,0,.45); }
+#well { box-shadow: inset 0 calc(var(--u) * .7) calc(var(--u) * 1.6) rgba(0,0,0,.95), inset 0 0 0 calc(var(--u) * .15) rgba(0,0,0,.6), 0 1px 0 rgba(255,225,180,.18); }

@@ -172,6 +172,22 @@ const setArm = deg => { armDeg = deg; $('tonearm').style.setProperty('--arm', de
   a.style.top = (ARM.P[1] + lx * Math.sin(r) + ly * Math.cos(r)) / 0.80 + '%'; // plinth is 80u tall
 }
 
+{ // real strobe ring: four rows of round dots on a brushed metal band (like a Technics platter edge)
+  const ring = (dark) => {
+    let o = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'>";
+    for (let r = 452; r <= 499; r += 1.6) o += `<circle cx='500' cy='500' r='${r.toFixed(1)}' fill='none' stroke='${(r * 10 | 0) % 3 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.08)'}' stroke-width='.7'/>`;
+    [[466, 172], [475.5, 177], [485, 183], [494, 188]].forEach(([r, n]) => {
+      for (let i = 0; i < n; i++) {
+        const a = i / n * Math.PI * 2, x = (500 + r * Math.cos(a)).toFixed(1), y = (500 + r * Math.sin(a)).toFixed(1);
+        o += dark ? `<circle cx='${x}' cy='${y}' r='3.3' fill='rgba(18,18,20,.88)'/><circle cx='${x}' cy='${(+y + 1.1).toFixed(1)}' r='2.1' fill='rgba(255,255,255,.22)'/><circle cx='${x}' cy='${(+y - .5).toFixed(1)}' r='2.2' fill='rgba(10,10,12,.9)'/>`
+                  : `<circle cx='${x}' cy='${y}' r='3.2' fill='rgba(200,205,255,.85)'/>`;
+      }
+    });
+    return 'url("data:image/svg+xml;utf8,' + encodeURIComponent(o + '</svg>') + '")';
+  };
+  document.documentElement.style.setProperty('--dots', ring(true));
+  document.documentElement.style.setProperty('--dots-l', ring(false));
+}
 const spinFx = { duration: CFG.spinSeconds * 1000, iterations: Infinity };
 const spin = $('record').animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], spinFx);
 const strobeSpin = $('strobe').animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], spinFx);
